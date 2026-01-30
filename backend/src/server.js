@@ -4,19 +4,41 @@ import { ENV } from "./lib/env.js";
 import { connectDB } from "./lib/db.js";
 import cors from "cors";
 import http from "http";
+import authRoutes from "./routes/authRoutes.js";
+import path from "path";
+import cookieParser from "cookie-parser";
+
+const __dirname = path.resolve();
 const app = express();
 
 
 app.get("/", (req, res)=>{
     res.status(200).json({msg: "api s up and running"})
+
 }) 
 //checking if server chl rha ya nhi
 
-app.use(cors({
-    origin: "*",
-    methods: ["GET","PUT","POST","DELETE"],
-    allowedHeaders: ["Content-Type","Authorization"]
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173", // 👈 exact frontend origin
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // 👈 REQUIRED for cookies
+  })
+);
+
+
+
+app.use(express.json()); 
+app.use(cookieParser());
+
+app.use(
+  "/public",
+  express.static(path.join(__dirname, "src/public"))
+);
+// this whole folder can be accessed now in the server
+app.use('/api/auth', authRoutes);
+
 
 const server = http.createServer(app);
 
