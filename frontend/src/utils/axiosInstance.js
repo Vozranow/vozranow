@@ -17,8 +17,12 @@ axiosInstance.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
+    if (originalRequest.url.includes("/login")) {
+   
+   return Promise.reject(error);
+}
     if (originalRequest.url.includes(API_PATHS.AUTH.REFRESH)) {
-  return Promise.reject(error);
+  return Promise.reject(error);  //if the refresh endpt itself fails ie token has expired ; login again
 }
     if (
       error.response?.status === 401 &&
@@ -41,3 +45,5 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
+
+

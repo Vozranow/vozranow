@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema(
     // Roles
     role: {
       type: String,
-      enum: ["user", "listener", "admin", "super_admin", "founder"],
+      enum: ["user", "listener", "admin", "manager", "founder"],
       default: "user",
     },
 
@@ -72,7 +72,14 @@ const userSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-
+    usernameLastChangedAt: {
+    type: Date,
+    default: null
+  },
+  emailLastChangedAt: {
+    type: Date,
+    default: null
+  },
     lastLoginAt: {
       type: Date,
     },

@@ -10,13 +10,14 @@ const sessionSchema = new mongoose.Schema(
 
     listenerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // role = listener
+      ref: "User",
       default: null,
     },
 
-    adminId: {
+    // CHANGED: Renamed from 'adminId' for clarity
+    assignedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // admin who assigned
+      ref: "User", // The Admin who clicked the button
       default: null,
     },
 
@@ -26,11 +27,43 @@ const sessionSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    scheduledAt: {
+    // NEW: Controls the "Join Lobby" button visibility
+    isLobbyOpen: {
+      type: Boolean,
+      default: false, 
+    },
+
+    // Fixed calendar date chosen by user
+    scheduledDate: {
       type: Date,
       required: true,
     },
 
+    // Flexible time window on that date
+    preferredTimeStart: {
+      type: Date,
+      required: true,
+    },
+
+    preferredTimeEnd: {
+      type: Date,
+      required: true,
+    },
+
+    // Final committed start time (set later)
+    scheduledStartAt: {
+      type: Date,
+      default: null,
+    },
+
+    // What user paid for
+    bookedDurationMinutes: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    // Actual session timing
     startedAt: {
       type: Date,
       default: null,
@@ -41,16 +74,25 @@ const sessionSchema = new mongoose.Schema(
       default: null,
     },
 
-    durationMinutes: {
+    actualDurationMinutes: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     price: {
-      type: Number, // amount deducted from wallet
+      type: Number,
       required: true,
+      min: 0,
     },
 
+    // NEW: The active Google Meet link (Before/During session)
+    meetLink: {
+      type: String,
+      default: "", 
+    },
+
+    // The saved video file (After session)
     recordingUrl: {
       type: String,
       default: null,
@@ -60,8 +102,57 @@ const sessionSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    // NEW: Feedback system
+    review: {
+      rating: { type: Number, min: 1, max: 5, default: null },
+      comment: { type: String, default: "" },
+      createdAt: { type: Date }
+    },
+
+    // NEW: Track status changes for the dashboard UI
+    timeline: [
+      {
+        status: { type: String, enum: ["created", "assigned", "started", "completed", "cancelled"] },
+        time: { type: Date, default: Date.now },
+        note: String // e.g., "Assigned by Admin John"
+      }
+    ],
+    attendance: {
+      userJoinedAt: { type: Date, default: null },
+      listenerJoinedAt: { type: Date, default: null },
+      
+      // If true, it means they showed up but left/disconnected
+      userWasPresent: { type: Boolean, default: false },
+      listenerWasPresent: { type: Boolean, default: false }
+    },
   },
   { timestamps: true }
 );
+
+// Indexes
+sessionSchema.index({ userId: 1, createdAt: -1 });
+sessionSchema.index({ userId: 1, status: 1, scheduledStartAt: 1 });
+// New Index: Helps Admin find sessions needing assignment quickly
+sessionSchema.index({ status: 1, scheduledDate: 1 }); 
+
+// Sanity checks
+sessionSchema.pre("save", function (next) {
+  if (this.startedAt && this.endedAt && this.endedAt < this.startedAt) {
+    return next(new Error("endedAt cannot be before startedAt"));
+  }
+
+  if (
+    this.preferredTimeStart &&
+    this.preferredTimeEnd &&
+    this.preferredTimeEnd <= this.preferredTimeStart
+  ) {
+    return next(
+      new Error("preferredTimeEnd must be after preferredTimeStart")
+    );
+  }
+
+  next();
+});
 
 export default mongoose.model("Session", sessionSchema);

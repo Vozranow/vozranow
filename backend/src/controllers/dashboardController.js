@@ -1,79 +1,95 @@
+import Session from "../models/session.js";
+import WalletTransaction from "../models/walletTransaction.js";
 import User from "../models/users.js";
-import Session from "../models/session.js";
-import Session from "../models/session.js";
-export const getDashboardSummary = async (req, res) => {
+import redis from "../lib/redis.js"; 
+
+export const getUserDashboard = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
+    const cacheKey = `dashboard:${userId}`;
 
-   
-    const user = req.user;
-
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+    // 1️⃣ CHECK REDIS
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      return res.status(200).json(JSON.parse(cachedData));
     }
 
-    // 2. Get next upcoming session with name of listener
-    const nextSession = await Session.findOne({
-      userId,
-      status: { $in: ["pending", "assigned"] },
-      scheduledAt: { $gt: new Date() },
-    })
-      .sort({ scheduledAt: 1 })
-      .populate("listenerId", "username");
+    // 2️⃣ CACHE MISS
+    const [stats, upcomingSessions, pastSessions, recentTransactions, userDoc] = await Promise.all([
+      // A. Stats
+      Session.aggregate([
+        { $match: { userId: userId, status: "completed" } }, 
+        {
+          $group: {
+            _id: null,
+            totalSessions: { $sum: 1 },
+            totalTimeSpent: { $sum: "$actualDurationMinutes" },
+            totalSpent: { $sum: "$price" },
+            avgRatingGiven: { $avg: "$review.rating" } 
+          }
+        }
+      ]),
+      
+      // B. Upcoming (Action Items)
+      Session.find({
+        userId,
+        status: { $in: ["pending", "assigned", "ongoing"] },
+        // scheduledDate: { $gte: new Date() } // Optional: strict future check
+      })
+      .sort({ scheduledDate: 1 }) // Soonest first
+      .limit(5)
+      .populate("listenerId", "username"),
 
-    return res.status(200).json({
+      // C. Past Sessions (Preview only - Limit 5) 🆕
+      Session.find({
+        userId,
+        status: { $in: ["completed", "cancelled"] }
+      })
+      .sort({ scheduledDate: -1 }) // Newest first
+      .limit(5)
+      .populate("listenerId", "username")
+      .select("scheduledDate status price listenerId review"),
+
+      // D. Wallet History
+      WalletTransaction.find({ userId }).sort({ createdAt: -1 }).limit(3),
+      
+      // E. Balance
+      User.findById(userId).select("walletBalance username email")
+    ]);
+
+    const userStats = stats[0] || {
+      totalSessions: 0,
+      totalTimeSpent: 0,
+      totalSpent: 0,
+      avgRatingGiven: 0
+    };
+
+    const responseData = {
+      message: "Dashboard data fetched",
       user: {
-        username: user.username,
-        email: user.email,
+        _id: userDoc._id,
+        username: userDoc.username,
+        email: userDoc.email,
       },
-      walletBalance: user.walletBalance,
-      totalSessions: user.totalSessions ,
-      totalTimeSpent: user.totalTimeSpent ,
-      nextSession,
-    });
+      overview: {
+        walletBalance: userDoc.walletBalance,
+        totalSessions: userStats.totalSessions,
+        totalTimeMinutes: userStats.totalTimeSpent,
+        totalSpent: userStats.totalSpent,
+        avgRatingGiven: parseFloat(userStats.avgRatingGiven || 0).toFixed(1),
+      },
+      upcomingSessions, // The "Next Up" card
+      pastSessions,     // The "Recent History" card
+      walletHistory: recentTransactions,
+    };
+
+    // 3️⃣ SAVE TO REDIS (5 Minutes)
+    await redis.set(cacheKey, JSON.stringify(responseData), "EX", 300);
+
+    return res.status(200).json(responseData);
+
   } catch (error) {
-    console.error("Dashboard summary error:", error);
-    res.status(500).json({
-      message: "Server error",
-    });
-  }
-};
-
-
-
-
-export const getUserSessions = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-
-    const sessions = await Session.find({
-      userId,
-      status: "completed",
-    })
-      .sort({ endedAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate("listenerId", "username");
-
-    const total = await Session.countDocuments({
-      userId,
-      status: "completed",
-    });
-
-    return res.status(200).json({
-      sessions,
-      page,
-      totalPages: Math.ceil(total / limit),
-      totalSessions: total,
-    });
-  } catch (error) {
-    console.error("Session history error:", error);
-    res.status(500).json({
-      message: "Server error",
-    });
+    console.error("Dashboard Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

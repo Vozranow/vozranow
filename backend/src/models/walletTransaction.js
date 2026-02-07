@@ -10,25 +10,25 @@ const walletTransactionSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ["topup", "session_deduction", "refund"],
+      enum: ["TOPUP", "SESSION", "REFUND"],
       required: true,
     },
 
     amount: {
       type: Number,
       required: true,
-      // positive = credit, negative = debit
+      min: 0, // NEVER negative
     },
 
     balanceAfter: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     referenceId: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,
-      // sessionId or paymentId
     },
 
     status: {
@@ -39,6 +39,9 @@ const walletTransactionSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Important index for wallet history
+walletTransactionSchema.index({ userId: 1, createdAt: -1 });
 
 export default mongoose.model(
   "WalletTransaction",
