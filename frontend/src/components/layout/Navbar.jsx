@@ -1,30 +1,12 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import hook
-import {
-  Code,
-  Globe,
-  Layers,
-  UserPlus,
-  Users,
-  Star,
-  FileText,
-  Shield,
-  RotateCcw,
-  Handshake,
-  Leaf,
-  HelpCircle,
-  BarChart,
-  Plug,
-  Menu,
-  X,
-  ChevronDown
-} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Menu, X, ChevronDown } from 'lucide-react';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const scrolled = useScroll(20);
-  const navigate = useNavigate(); // 2. Initialize hook
+  const scrolled = useScroll(10);
+  const navigate = useNavigate();
 
   // Navigation handlers
   const handleSignIn = () => navigate('/login');
@@ -43,96 +25,97 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 ${
+      className={`fixed top-0 z-50 w-full transition-all duration-500 ease-in-out ${
         scrolled
-          ? 'bg-white/80 border-gray-200 backdrop-blur-md shadow-sm'
-          : 'bg-white border-transparent'
+          ? 'bg-[#FDFCF8]/95 backdrop-blur-md border-b border-[#E8E6E1] py-3'
+          : 'bg-transparent py-5 border-transparent'
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      {/* Container: widened to px-8 or px-12 to push logo left */}
+      <div className="mx-auto flex h-full w-full max-w-[1400px] items-center justify-between px-6 md:px-12">
         
-        {/* Logo & Desktop Nav */}
-        <div className="flex items-center gap-8">
-          <a href="#" className="flex items-center space-x-2 font-bold text-xl">
-            <WordmarkIcon className="h-6 w-auto" />
+        {/* --- 1. The Logo (Mature, Serif, Icon-free) --- */}
+        <div className="flex items-center">
+          <a href="/" className="font-serif text-3xl tracking-tight text-[#2D2A26] hover:opacity-80 transition-opacity">
+            Solance<span className="text-[#8C877D]">.</span>
           </a>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <DropdownItem title="Product" items={productLinks} />
-            <DropdownItem title="Company" items={companyLinks} footerLinks={companyLinks2} />
-            <a href="#" className="text-sm font-medium text-gray-700 hover:text-black transition-colors">
-              Pricing
-            </a>
-          </nav>
         </div>
 
-        {/* Desktop Buttons */}
-        <div className="hidden md:flex items-center gap-4">
+        {/* --- 2. Center Navigation (Clean Text) --- */}
+        <nav className="hidden md:flex items-center gap-10">
+          <DropdownItem title="Find Support" items={supportLinks} />
+          <DropdownItem title="Community" items={communityLinks} />
+          
+          <a href="/pricing" className="text-[15px] font-medium text-[#5C5954] hover:text-[#2D2A26] transition-colors tracking-wide">
+            Pricing
+          </a>
+          
+          <a href="/listener-landing" className="text-[15px] font-medium text-[#5C5954] hover:text-[#2D2A26] transition-colors tracking-wide">
+            Become a Listener
+          </a>
+        </nav>
+
+        {/* --- 3. Action Buttons (Subtle & Serious) --- */}
+        <div className="hidden md:flex items-center gap-6">
           <button 
             onClick={handleSignIn}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-black transition-colors"
+            className="text-[15px] font-medium text-[#5C5954] hover:text-[#2D2A26] transition-colors"
           >
-            Sign In
+            Log in
           </button>
+          
           <button 
             onClick={handleRegister}
-            className="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+            className="rounded-full bg-[#2D2A26] px-6 py-2.5 text-[15px] font-medium text-white transition-all hover:bg-[#403D39] hover:shadow-lg hover:shadow-[#2D2A26]/10 active:scale-95"
           >
             Get Started
           </button>
         </div>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Toggle */}
         <button
-          className="md:hidden p-2 text-gray-700"
+          className="md:hidden p-2 text-[#2D2A26]"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMobileMenuOpen ? <X size={24} strokeWidth={1.5} /> : <Menu size={24} strokeWidth={1.5} />}
         </button>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* --- Mobile Menu (Clean Overlay) --- */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-50 bg-white border-t border-gray-100 overflow-y-auto md:hidden animate-in slide-in-from-top-5 duration-200">
-          <div className="p-4 space-y-6">
+        <div className="fixed inset-0 top-[70px] z-40 bg-[#FDFCF8] overflow-y-auto md:hidden animate-in fade-in duration-200">
+          <div className="flex flex-col p-8 space-y-8">
             
-            {/* Mobile Product Section */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Product</h3>
-              <div className="grid gap-4">
-                {productLinks.map((item, i) => (
-                  <MobileListItem key={i} {...item} />
+            {/* Mobile Support */}
+            <div className="space-y-4">
+              <h3 className="font-serif text-xl text-[#2D2A26]">Find Support</h3>
+              <div className="flex flex-col space-y-3 pl-2 border-l border-[#E8E6E1]">
+                {supportLinks.map((item, i) => (
+                  <MobileLink key={i} {...item} />
                 ))}
               </div>
             </div>
 
-            {/* Mobile Company Section */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Company</h3>
-              <div className="grid gap-4">
-                {companyLinks.map((item, i) => (
-                  <MobileListItem key={i} {...item} />
-                ))}
-                {companyLinks2.map((item, i) => (
-                   <a key={i} href={item.href} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50">
-                    <item.icon className="h-5 w-5 text-gray-500" />
-                    <span className="font-medium text-gray-900">{item.title}</span>
-                   </a>
+            {/* Mobile Community */}
+            <div className="space-y-4">
+              <h3 className="font-serif text-xl text-[#2D2A26]">Community</h3>
+              <div className="flex flex-col space-y-3 pl-2 border-l border-[#E8E6E1]">
+                {communityLinks.map((item, i) => (
+                  <MobileLink key={i} {...item} />
                 ))}
               </div>
             </div>
 
-            <div className="pt-4 flex flex-col gap-3">
-              <button 
+            <div className="pt-8 space-y-4">
+               <button 
                 onClick={handleSignIn}
-                className="w-full rounded-md border border-gray-200 py-2.5 font-medium text-gray-700 hover:bg-gray-50"
+                className="w-full text-left text-lg font-medium text-[#5C5954]"
               >
-                Sign In
+                Log in
               </button>
               <button 
                 onClick={handleRegister}
-                className="w-full rounded-md bg-black py-2.5 font-medium text-white hover:bg-gray-800"
+                className="w-full rounded-full bg-[#2D2A26] py-4 text-lg font-medium text-white"
               >
                 Get Started
               </button>
@@ -144,115 +127,109 @@ export default function Navbar() {
   );
 }
 
-// --- Subcomponents ---
+// --- Minimalist Components ---
 
-function DropdownItem({ title, items, footerLinks }) {
+function DropdownItem({ title, items }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div 
-      className="relative group"
+      className="relative group h-full flex items-center"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <button className="flex items-center gap-1 text-sm font-medium text-gray-700 group-hover:text-black transition-colors focus:outline-none">
+      <button className="flex items-center gap-1.5 text-[15px] font-medium text-[#5C5954] group-hover:text-[#2D2A26] transition-colors focus:outline-none py-4">
         {title}
-        <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown 
+          size={14} 
+          className={`transition-transform duration-300 text-[#8C877D] ${isOpen ? 'rotate-180' : ''}`} 
+        />
       </button>
 
-      {/* Dropdown Panel */}
+      {/* Dropdown Panel: Clean, no icons, just good typography */}
       <div 
-        className={`absolute top-full left-0 mt-2 w-[500px] rounded-xl border border-gray-100 bg-white shadow-lg p-4 transition-all duration-200 origin-top-left
+        className={`absolute top-full left-1/2 -translate-x-1/2 mt-0 w-[280px] rounded-sm border border-[#E8E6E1] bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] py-2 transition-all duration-200 origin-top
         ${isOpen ? 'opacity-100 translate-y-0 visible' : 'opacity-0 translate-y-2 invisible'}`}
       >
-        <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-2 grid grid-cols-2 gap-2">
+        <div className="flex flex-col">
             {items.map((item, i) => (
-              <a key={i} href={item.href} className="flex gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-100 bg-white shadow-sm">
-                    <item.icon className="h-4 w-4 text-gray-600" />
-                  </div>
+              <a 
+                key={i} 
+                href={item.href} 
+                className="block px-6 py-3.5 hover:bg-[#F9F8F6] transition-colors group/item"
+              >
+                <div className="text-[15px] font-medium text-[#2D2A26] group-hover/item:text-black">
+                    {item.title}
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">{item.title}</div>
-                  <div className="text-xs text-gray-500 mt-1">{item.description}</div>
+                <div className="text-[13px] text-[#8C877D] mt-0.5 font-light">
+                    {item.description}
                 </div>
               </a>
             ))}
-          </div>
-          
-          {footerLinks && (
-            <div className="col-span-2 mt-2 pt-4 border-t border-gray-100 grid grid-cols-2 gap-2">
-              {footerLinks.map((item, i) => (
-                 <a key={i} href={item.href} className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700">
-                   {item.icon && <item.icon className="h-4 w-4 text-gray-400" />}
-                   {item.title}
-                 </a>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-function MobileListItem({ title, description, icon: Icon, href }) {
+function MobileLink({ title, href }) {
   return (
-    <a href={href} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white">
-        <Icon className="h-5 w-5 text-gray-600" />
-      </div>
-      <div>
-        <span className="block font-medium text-gray-900">{title}</span>
-        {description && <span className="block text-sm text-gray-500">{description}</span>}
-      </div>
+    <a href={href} className="block py-1 text-[16px] text-[#5C5954]">
+      {title}
     </a>
   );
 }
 
 // --- Hooks ---
-
 function useScroll(threshold) {
   const [scrolled, setScrolled] = useState(false);
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > threshold);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, [threshold]);
-
   return scrolled;
 }
 
-// --- Data ---
+// --- DATA (Text Only, No Icons) ---
 
-const productLinks = [
-  { title: 'Website Builder', href: '#', description: 'Create responsive websites', icon: Globe },
-  { title: 'Cloud Platform', href: '#', description: 'Deploy and scale apps', icon: Layers },
-  { title: 'Team Collaboration', href: '#', description: 'Tools to help teams work', icon: UserPlus },
-  { title: 'Analytics', href: '#', description: 'Track website traffic', icon: BarChart },
-  { title: 'Integrations', href: '#', description: 'Connect your apps', icon: Plug },
-  { title: 'API', href: '#', description: 'Build custom integrations', icon: Code },
+const supportLinks = [
+  { 
+    title: '1-on-1 Sessions', 
+    href: '/booking', 
+    description: 'Private video calls with listeners.' 
+  },
+  { 
+    title: 'Emotional Support', 
+    href: '/topics/emotional', 
+    description: 'Anxiety, stress, and daily struggles.' 
+  },
+  { 
+    title: 'Personal Growth', 
+    href: '/topics/growth', 
+    description: 'Coaching for life and career.' 
+  },
+  { 
+    title: 'Crisis Resources', 
+    href: '/crisis', 
+    description: 'Immediate help when you need it.' 
+  },
 ];
 
-const companyLinks = [
-  { title: 'About Us', href: '#', description: 'Learn our story', icon: Users },
-  { title: 'Customer Stories', href: '#', description: 'Client success', icon: Star },
-  { title: 'Partnerships', href: '#', description: 'Grow with us', icon: Handshake },
+const communityLinks = [
+  { 
+    title: 'Our Mission', 
+    href: '/about', 
+    description: 'The story behind Solance.' 
+  },
+  { 
+    title: 'Safety & Trust', 
+    href: '/safety', 
+    description: 'How we keep this space safe.' 
+  },
+  { 
+    title: 'Stories', 
+    href: '/stories', 
+    description: 'Real experiences from our community.' 
+  },
 ];
-
-const companyLinks2 = [
-  { title: 'Terms of Service', href: '#', icon: FileText },
-  { title: 'Privacy Policy', href: '#', icon: Shield },
-  { title: 'Refund Policy', href: '#', icon: RotateCcw },
-  { title: 'Blog', href: '#', icon: Leaf },
-  { title: 'Help Center', href: '#', icon: HelpCircle },
-];
-
-const WordmarkIcon = (props) => (
-  <svg viewBox="0 0 84 24" fill="currentColor" {...props}>
-    <path d="M12.297 0h1.789v5.441l-.961.016c-2.36.04-3.441.215-4.441.719-.836.414-1.278.879-1.895 1.976-.219.399-.535 1.02-.535 1.063 0 .02 1.285.027 3.918.027h3.914v5.113h-3.914c-2.54 0-3.918.008-3.918.028 0 .05.254.597.441.953.344.656.649 1.086 1.051 1.48.668.657 1.356.985 2.445 1.16.645.106 1.274.145 2.61.16l1.285.016v5.442l-2.055-.004a120 120 0 0 1-2.183-.016M16.469 14.715c0-5.504.011-9.04.031-9.29a5.54 5.54 0 0 1 1.527-3.48c.778-.82 1.922-1.457 3.118-1.734C21.915.035 22.422 0 24.39 0h1.652v4.914h-1.426c-1.324 0-1.445.004-1.644.055-.739.191-1.059.699-1.106 1.754l-.015.355h4.191v4.914h-4.184v11.602h-5.39Z" />
-  </svg>
-);

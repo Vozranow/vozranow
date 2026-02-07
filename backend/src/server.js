@@ -5,6 +5,12 @@ import { connectDB } from "./lib/db.js";
 import cors from "cors";
 import http from "http";
 import authRoutes from "./routes/authRoutes.js";
+import sessionRoutes from "./routes/sessionRoutes.js"
+import walletRoutes from "./routes/walletRoutes.js"
+import userRoutes from "./routes/userRoutes.js"
+import listenerRoutes from "./routes/listenerRoutes.js"
+import managerRoutes from "./routes/managerRoutes.js"
+import adminRoutes from "./routes/adminRoutes.js"
 import path from "path";
 import cookieParser from "cookie-parser";
 
@@ -28,7 +34,7 @@ app.use(
 );
 
 
-
+// app.set('trust proxy', 1);
 app.use(express.json()); 
 app.use(cookieParser());
 
@@ -37,8 +43,15 @@ app.use(
   express.static(path.join(__dirname, "src/public"))
 );
 // this whole folder can be accessed now in the server
-app.use('/api/auth', authRoutes);
 
+
+app.use('/api/auth', authRoutes);
+app.use("/api/session", sessionRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/user",userRoutes);
+app.use("/api/listener",listenerRoutes);
+app.use("/api/manager",managerRoutes);
+app.use("/api/admin",adminRoutes);
 
 const server = http.createServer(app);
 

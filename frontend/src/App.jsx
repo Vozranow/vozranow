@@ -7,6 +7,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import { Routes, Route } from "react-router-dom";
 import ResetPasswordPage from './pages/ResetPassword.jsx'
+import ForgotPasswordPage from './pages/ForgetPassword.jsx'
+import Dashboard from './pages/Dashboard.jsx'
 
 function App() {
   console.log(ENV.BACKEND_URL);
@@ -16,6 +18,7 @@ function App() {
       {/* ===== Public Routes ===== */}
       <Route path="/" element={<LandingPage/>}/>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-pass" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="/register" element={<SignupPage />} />
@@ -23,6 +26,7 @@ function App() {
       {/* ===== Protected Routes ===== */}
       <Route element={<ProtectedRoute />}>
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Route>
 
     </Routes>
