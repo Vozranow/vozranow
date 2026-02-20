@@ -8,4 +8,4 @@ router.get("/requests", protect,authorize("admin"),getPendingSessions);
 router.get("/find-listeners/:sessionId",protect,authorize("admin"),getListenersForAssignment);
 
 router.put("/sessions/:id/assign", protect, authorize("admin"), assignSession);
-export default router;
+export default router

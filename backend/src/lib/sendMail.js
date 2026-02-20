@@ -27,7 +27,7 @@ const resend = new Resend(ENV.RESEND_KEY);
 
 export const sendOtpEmail = async (to, sub, otp) => {
   const { data, error } = await resend.emails.send({
-    from: 'Solance <onboarding@resend.dev>',
+    from: "Solance <support@mail.soumyodeep.online>",
     to: to,
     subject: sub,
     html: verifyEmailHtml(otp),
@@ -42,7 +42,7 @@ export const sendOtpEmail = async (to, sub, otp) => {
 
 export const sendForgotEmail = async (to, sub, resetLink) => {
   const { data, error } = await resend.emails.send({
-    from: 'Solance <onboarding@resend.dev>',
+    from: "Solance <support@soumyodeep.online>",
     to: to,
     subject: sub,
     html: forgotPasswordEmailHtml(resetLink),

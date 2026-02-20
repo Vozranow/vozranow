@@ -1,5 +1,3 @@
-
-
 const API_PATHS = {
 
   AUTH: {
@@ -32,6 +30,9 @@ const API_PATHS = {
     APPLY: "/api/listener/apply", 
     DASHBOARD: "/api/listener/dashboard",
     TOGGLE_AVAILABILITY: "/api/listener/availability", 
+    SESSION: "/api/listener/sessions",
+    UPDATE_PROFILE: "/api/listener/update-profile",
+    UPLOAD_URL: "/api/listener/presigned-url"
   },
 
   
@@ -45,11 +46,14 @@ const API_PATHS = {
     APPLY: "/api/session/apply", 
     CAN_JOIN: (sessionId) => `/api/session/canJoin/${sessionId}`, // Lobby check
     HISTORY: "/api/session/history", // Past sessions
+    GET_MESSAGES: (sessionId) => `/api/session/${sessionId}/messages`,
+    COMPLETE : "/api/session/complete"
   },
 
   
   USER: {
     DASHBOARD: "/api/user/dashboard",
+    SUBMIT_FEEDBACK: (sessionId) => `/api/user/${sessionId}/review`
   },
 
   
@@ -57,6 +61,8 @@ const API_PATHS = {
     CREDIT: "/api/wallet/credit",
     HISTORY: "/api/wallet/history",
     // BALANCE: "/api/wallet/balance",
+    CREATE_ORDER: "/api/wallet/create-order",
+    VERIFY: "/api/wallet/verify-payment"
   },
 };
 

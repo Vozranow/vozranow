@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Lock, ArrowRight, Loader2, CheckCircle } from 'lucide-react';
-import axiosInstance from "../utils/axiosInstance";
-import API_PATHS from "../utils/apiPaths";
+import axiosInstance from "../../utils/axiosInstance";
+import API_PATHS from "../../utils/apiPaths";
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();

@@ -7,11 +7,14 @@ import ListenerProfile from "../models/listenerProfile.js";
 import { sendForgotEmail, sendOtpEmail } from "../lib/sendMail.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import redis from "../lib/redis.js";
+
+
 // Helper: Generate JWT
 const generateAccessToken = (id) => {
   return jwt.sign({ id }, ENV.ACCESS_SECRET, {
     expiresIn: '300s', //5 min
-  });
+  }); 
 };
 const generateRefreshToken = (id) => {
   return jwt.sign({ id }, ENV.REFRESH_SECRET, {
@@ -306,6 +309,8 @@ export const loginUser = async (req, res) => {
     user.lastLoginAt = new Date();
     await user.save({ validateBeforeSave: false });
 
+    await redis.del(`user:${user._id}`);
+
     res.status(200).json({
       message: "Login successful",
       user: {
@@ -520,6 +525,8 @@ export const resetPassword = async (req, res) => {
     await user.save();
 
     await otpRecord.deleteOne(); //del the hashed token
+    
+    await redis.del(`user:${user._id}`);
 
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
@@ -619,6 +626,8 @@ export const updateProfile = async (req, res) => {
 
     await user.save();
 
+    await redis.del(`user:${user._id}`);
+
     return res.status(200).json({
       message: "Profile updated successfully",
       user: {
@@ -679,6 +688,8 @@ export const verifyEmailChangeOtp = async (req, res) => {
     await user.save();
     await otpRecord.deleteOne();
 
+    await redis.del(`user:${user._id}`);
+
     return res.status(200).json({
       message: "Email updated successfully",
       email: user.email,
@@ -691,8 +702,6 @@ export const verifyEmailChangeOtp = async (req, res) => {
     });
   }
 };
-
-
 
 
 // @desc POST registering the listener
@@ -780,6 +789,26 @@ export const registerListener = async (req, res) => {
 
   } catch (error) {
     console.error("Listener Reg Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// PUT /api/listener/profile
+export const updateListenerProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { bio, preferredDays } = req.body; // e.g., ["Mon", "Wed"]
+
+    const profile = await ListenerProfile.findOneAndUpdate(
+      { userId },
+      { bio, preferredDays },
+      { new: true }
+    );
+    await redis.del(`dashboard:listener:${userId}`)
+    res.status(200).json({ message: "Profile updated successfully", profile });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };

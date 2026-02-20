@@ -2,6 +2,7 @@ import Session from "../models/session.js";
 import WalletTransaction from "../models/walletTransaction.js";
 import User from "../models/users.js";
 import redis from "../lib/redis.js"; 
+import mongoose from "mongoose";
 
 export const getUserDashboard = async (req, res) => {
   try {
@@ -18,7 +19,12 @@ export const getUserDashboard = async (req, res) => {
     const [stats, upcomingSessions, pastSessions, recentTransactions, userDoc] = await Promise.all([
       // A. Stats
       Session.aggregate([
-        { $match: { userId: userId, status: "completed" } }, 
+        { 
+          $match: { 
+            userId: new mongoose.Types.ObjectId(userId), // 👈 Explicitly cast to ObjectId
+            status: "completed" 
+          } 
+        }, 
         {
           $group: {
             _id: null,
@@ -46,7 +52,7 @@ export const getUserDashboard = async (req, res) => {
         status: { $in: ["completed", "cancelled"] }
       })
       .sort({ scheduledDate: -1 }) // Newest first
-      .limit(5)
+      .limit(2)
       .populate("listenerId", "username")
       .select("scheduledDate status price listenerId review"),
 

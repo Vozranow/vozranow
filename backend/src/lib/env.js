@@ -13,5 +13,12 @@ export const ENV ={
     RESEND_KEY: process.env.RESEND_KEY,
     FRONTEND_URL: process.env.FRONTEND_URL,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY,
-    RAZORPAY_KEY_SECRET: process.env.RAZORPAY_SECRET
+    RAZORPAY_KEY_SECRET: process.env.RAZORPAY_SECRET,
+    AGORA_APP_ID: process.env.AGORA_APP_ID,
+    AGORA_APP_CERTIFICATE: process.env.AGORA_APP_CERTIFICATE,
+    R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+    R2_ENDPOINT: process.env.R2_ENDPOINT,
+    R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
+    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME
 };

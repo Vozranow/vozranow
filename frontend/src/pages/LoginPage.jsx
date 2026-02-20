@@ -8,7 +8,7 @@ import { useAuth } from "../context/useAuth.js"; // Adjusted path based on typic
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { user, login, isAuthenticated } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -36,9 +36,20 @@ const LoginPage = () => {
     try {
       const res = await axiosInstance.post(API_PATHS.AUTH.LOGIN, form);
       // Pass the user object to your context
-      login(res.data.user);
-      navigate("/dashboard");
-      // window.location.href = "/dashboard";
+      const userData = res.data.user; 
+
+      // 2. Update Context (This happens in the background)
+      login(userData);
+
+      // 3. Use the LOCAL variable for checking role (NOT the state 'user')
+      if (userData.role === "admin") {
+         navigate("/admin/dashboard");
+      } else if (userData.role === "listener") {
+         navigate("/listener/dashboard");
+      } else {
+         navigate("/dashboard"); 
+      }
+      
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password.");
       console.log(err);

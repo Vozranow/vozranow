@@ -3,6 +3,7 @@ import { protect } from "../middleware/authMiddleware.js";
 import { getUserDashboard } from "../controllers/dashboardController.js";
 import { rateLimiter } from "../middleware/ratelimiterMiddleware.js";
 import { userKey } from "../middleware/ratelimitKeyMiddleware.js";
+import { submitSessionReview } from "../controllers/sessionController.js";
 
 const router = express.Router();
 
@@ -17,5 +18,5 @@ router.get(
   getUserDashboard
 );
 
-
+router.post("/:sessionId/review", protect, submitSessionReview);
 export default router;

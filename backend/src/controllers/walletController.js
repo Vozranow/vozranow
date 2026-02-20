@@ -9,6 +9,7 @@ const razorpay = new Razorpay({
   key_id: ENV.RAZORPAY_KEY_ID,
   key_secret: ENV.RAZORPAY_KEY_SECRET,
 });
+import crypto from "crypto"
 /**
  * Fake wallet top-up (used now, Razorpay later)
  * POST /api/wallet/topup
@@ -113,7 +114,7 @@ export const createOrder = async (req, res, next) => {
     const options = {
       amount: amount * 100, 
       currency: "INR",
-      receipt: `receipt_${Date.now()}_${req.user._id}`,
+      receipt: `rcpt_${Date.now()}_${req.user._id.toString().slice(-4)}`,
     };
 
     const order = await razorpay.orders.create(options);
@@ -185,7 +186,7 @@ export const verifyPayment = async (req, res, next) => {
     );
 
     // F. Create Ledger Entry (Transaction)
-    await Transaction.create([{
+    await WalletTransaction.create([{
       userId,
       type: "TOPUP",
       amount: amountInRupees,
@@ -198,6 +199,8 @@ export const verifyPayment = async (req, res, next) => {
     // Note: We do this *before* commit, or right after. 
     // If we do it here and commit fails, the cache clears but old data reloads. That's fine.
     await redis.del(`dashboard:${userId}`);
+
+    await redis.del(`user:${userId}`);
 
     // H. COMMIT
     await session.commitTransaction();
@@ -269,6 +272,8 @@ export const debitWallet = async ({
     { session }
   );
   await redis.del(`dashboard:${userId}`);
+
+  await redis.del(`user:${userId}`);
   // ledger entry
   await WalletTransaction.create(
     [

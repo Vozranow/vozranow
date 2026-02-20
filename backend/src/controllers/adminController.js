@@ -1,6 +1,7 @@
 import Session from "../models/session.js";
 import ListenerProfile from "../models/listenerProfile.js";
 import redis from "../lib/redis.js";
+import User from "../models/users.js";
 // @desc    Get all pending session requests (Nearest First)
 // @route   GET /api/admin/requests
 export const getPendingSessions = async (req, res) => {
@@ -10,13 +11,13 @@ export const getPendingSessions = async (req, res) => {
     // 3. Sort by scheduledDate ASC (Oldest/Nearest date at the top)
     const sessions = await Session.find({ status: "pending" })
       .populate("userId", "username email") 
-      .sort({ scheduledDate: 1 }); 
+      .sort({ scheduledDate: 1 });
 
     // 4. Format the data for the Admin Dashboard
     const formattedSessions = sessions.map((session) => ({
       _id: session._id,
       clientName: session.userId.username,
-      clientEmail: session.userId.email,
+      clientEmail: session.userId.email, 
       
       // The Date User Selected
       scheduledDate: session.scheduledDate,
@@ -134,10 +135,7 @@ export const getListenersForAssignment = async (req, res) => {
 //PUT /api/admin/sessions/:id/assign
 export const assignSession = async (req, res) => {
   try {
-    // 1️⃣ ID comes from the URL (Params)
     const { id } = req.params; 
-
-    // 2️⃣ Data comes from the Body
     const { listenerId, finalStartTime } = req.body;
     const adminId = req.user._id; 
 
@@ -145,36 +143,85 @@ export const assignSession = async (req, res) => {
         return res.status(400).json({ message: "You must set a specific start time." });
     }
 
-    // Use 'id' from params here 👇
+    // 🟢 NEW: Validate Listener Exists & Role Check
+    const listener = await User.findById(listenerId);
+    if (!listener) {
+        return res.status(404).json({ message: "Listener not found in database." });
+    }
+    if (listener.role !== 'listener') {
+        return res.status(400).json({ message: "Selected user is not a registered listener." });
+    }
+    // 🟢 END NEW CHECK
+
     const session = await Session.findById(id);
     
     if (!session) return res.status(404).json({ message: "Session not found" });
+    
     if (session.status !== "pending") {
-        return res.status(400).json({ message: "Session already assigned" });
+        return res.status(400).json({ message: "Session already assigned or completed" });
     }
 
-    // Update Logic (Same as before)
+    // ---------------------------------------------------------
+    // 🚨 TIME WINDOW VALIDATION LOGIC START
+    // ---------------------------------------------------------
+
+    const adminStart = new Date(finalStartTime);
+    const userWindowStart = new Date(session.preferredTimeStart);
+    const userWindowEnd = new Date(session.preferredTimeEnd);
+
+    // Check 1: Is Admin Start Time VALID? (Must be a real date)
+    if (isNaN(adminStart.getTime())) {
+        return res.status(400).json({ message: "Invalid Start Time format" });
+    }
+
+    // Check 2: Too Early? (Admin sets time BEFORE user's window opens)
+    if (adminStart < userWindowStart) {
+        return res.status(400).json({ 
+            message: `Cannot start before User's preferred time (${userWindowStart.toLocaleString()})` 
+        });
+    }
+
+    // Check 3: Too Late? (Does the Session Duration spill outside the window?)
+    // Logic: AdminStart + SessionDuration MUST BE <= UserWindowEnd
+    
+    const durationInMs = session.bookedDurationMinutes * 60 * 1000; // Convert mins to ms
+    const sessionEndTime = new Date(adminStart.getTime() + durationInMs);
+
+    if (sessionEndTime > userWindowEnd) {
+        return res.status(400).json({ 
+            message: `Session duration (${session.bookedDurationMinutes} mins) exceeds the user's window. Session would end at ${sessionEndTime.toLocaleTimeString()}, but window closes at ${userWindowEnd.toLocaleTimeString()}.`
+        });
+    }
+
+    // ---------------------------------------------------------
+    // 🚨 VALIDATION END
+    // ---------------------------------------------------------
+
+    // Update Logic
     session.listenerId = listenerId;
     session.assignedBy = adminId;
-    session.scheduledStartAt = new Date(finalStartTime);
+    session.scheduledStartAt = adminStart;
     session.status = "assigned";
     
     session.timeline.push({
         status: "assigned",
         time: new Date(),
-        note: `Assigned by Admin for ${new Date(finalStartTime).toLocaleTimeString()}`
+        note: `Assigned by Admin for ${adminStart.toLocaleString()}`
     });
+
     const userId = session.userId;
-    console.log(userId);
+    
+    // Clear Dashboard Cache for User
     await redis.del(`dashboard:${userId}`);
+
+    await redis.del(`dashboard:listener:${listenerId}`)
+    
     await session.save();
 
     // Populate for response
     await session.populate("listenerId", "username email");
     await session.populate("userId", "username");
 
-
-    
     res.status(200).json({ 
         message: "Session successfully assigned!", 
         session 

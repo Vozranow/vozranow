@@ -20,9 +20,53 @@ const LandingPage = () => {
     }
   }, [isAuthenticated, loading, navigate]);
 
-  if (loading) {
-        return <div className="h-screen flex items-center justify-center">Loading session...</div>;
-    }
+ if (loading) {
+    return (
+      <div className="h-screen w-full bg-[#FDFCF8] flex flex-col items-center justify-center relative overflow-hidden">
+        
+        {/* Soft Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-teal-100/40 rounded-full blur-3xl animate-pulse"></div>
+
+        {/* The "Blooming Lotus" Block Loader */}
+        <div className="relative flex items-center justify-center mb-8">
+          <div className="grid grid-cols-2 gap-1.5 rotate-45">
+            <div 
+              className="w-6 h-6 bg-[#173F3A] rounded-tl-full animate-pulse shadow-sm" 
+              style={{ animationDuration: '1.5s' }}
+            ></div>
+            <div 
+              className="w-6 h-6 bg-teal-600 rounded-tr-full animate-pulse shadow-sm" 
+              style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}
+            ></div>
+            <div 
+              className="w-6 h-6 bg-teal-500 rounded-bl-full animate-pulse shadow-sm" 
+              style={{ animationDuration: '1.5s', animationDelay: '0.6s' }}
+            ></div>
+            <div 
+              className="w-6 h-6 bg-[#0F2926] rounded-br-full animate-pulse shadow-sm" 
+              style={{ animationDuration: '1.5s', animationDelay: '0.4s' }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Branding & Text */}
+        <div className="text-center relative z-10 flex flex-col items-center">
+          <h2 className="font-serif text-2xl text-[#173F3A] font-bold tracking-widest mb-2">
+            SOLANCE
+          </h2>
+          <div className="flex items-center gap-1 text-sm text-[#8C877D]">
+            <span>Preparing your space</span>
+            <span className="flex gap-0.5">
+              <span className="animate-[bounce_1s_infinite_-0.3s]">.</span>
+              <span className="animate-[bounce_1s_infinite_-0.15s]">.</span>
+              <span className="animate-[bounce_1s_infinite]">.</span>
+            </span>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
   return (
     <div>
       <Navbar />
