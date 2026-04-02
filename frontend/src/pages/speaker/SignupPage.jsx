@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, User, ArrowRight, Loader2, ArrowLeft, RefreshCw } from 'lucide-react';
-import axiosInstance from "../utils/axiosInstance";
-import API_PATHS from "../utils/apiPaths";
-import { useAuth } from "../context/useAuth.js";
+import axiosInstance from "../../utils/axiosInstance.js";
+import API_PATHS from "../../utils/apiPaths.js";
+import { useAuth } from "../../context/useAuth.js";
 
 const SignupPage = () => {
   const navigate = useNavigate();

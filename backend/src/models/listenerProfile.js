@@ -22,6 +22,13 @@ const listenerProfileSchema = new mongoose.Schema({
     enum: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   }],
 
+  bio: {
+    type: String,
+    default: "",
+    trim: true,
+    maxLength: 500 // Good practice to prevent massive essays
+  },
+
   // 🏷️ Tags for Admin to see (e.g., "Career Expert", "Fluent in Hindi")
   tags: [{
     type: String, 
@@ -43,12 +50,8 @@ const listenerProfileSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  totalPaidOut: { type: Number, default: 0 },
 
-  // To check if they are "New" (< 3 sessions)
-  joinedAt: {
-    type: Date,
-    default: Date.now
-  }
 }, { timestamps: true });
 
 export default mongoose.model("ListenerProfile", listenerProfileSchema);

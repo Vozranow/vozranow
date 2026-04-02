@@ -1,14 +1,5 @@
-import mongoose from "mongoose";
-import Wallet from "../models/wallet.js";
-import WalletTransaction from "../models/walletTransaction.js";
-import User from "../models/users.js";
-import redis from "../lib/redis.js";
-import Razorpay from "razorpay";
-import { ENV } from "../lib/env.js";
-const razorpay = new Razorpay({
-  key_id: ENV.RAZORPAY_KEY_ID,
-  key_secret: ENV.RAZORPAY_KEY_SECRET,
-});
+
+import * as walletService from '../services/walletServices.js';
 /**
  * Fake wallet top-up (used now, Razorpay later)
  * POST /api/wallet/topup
@@ -101,28 +92,17 @@ const razorpay = new Razorpay({
 // 1. CREATE ORDER
 // Frontend sends amount -> We ask Razorpay for an Order ID
 // ----------------------------------------------------------------------
+
+
 export const createOrder = async (req, res, next) => {
   try {
-    const { amount } = req.body; // Amount in Rupees (e.g. 500)
+    const result = await walletService.createOrder(req.user._id, req.body.amount);
 
-    if (!amount || amount <= 0) {
-      return res.status(400).json({ message: "Invalid amount" });
+    if (!result.success) {
+      return res.status(result.statusCode).json({ message: result.message });
     }
 
-    // Razorpay works in "Paise" (100 paise = 1 Rupee)
-    const options = {
-      amount: amount * 100, 
-      currency: "INR",
-      receipt: `receipt_${Date.now()}_${req.user._id}`,
-    };
-
-    const order = await razorpay.orders.create(options);
-
-    res.status(200).json({
-      success: true,
-      order, // Sends { id: "order_123...", amount: 50000, ... }
-    });
-
+    return res.status(result.statusCode).json(result.data);
   } catch (error) {
     console.error("Razorpay Create Order Error:", error);
     next(error);
@@ -131,196 +111,43 @@ export const createOrder = async (req, res, next) => {
 
 
 export const verifyPayment = async (req, res, next) => {
-  // 1. VERIFY SIGNATURE (Do this FIRST, outside the transaction)
-  // If this fails, we don't want to waste database resources opening a session.
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const userId = req.user._id;
-
-  const body = razorpay_order_id + "|" + razorpay_payment_id;
-  const expectedSignature = crypto
-    .createHmac("sha256", ENV.RAZORPAY_KEY_SECRET)
-    .update(body.toString())
-    .digest("hex");
-
-  if (expectedSignature !== razorpay_signature) {
-    return res.status(400).json({ success: false, message: "Invalid Payment Signature" });
-  }
-
-  // 2. START ACID TRANSACTION
-  const session = await mongoose.startSession();
-  
   try {
-    session.startTransaction();
+    const result = await walletService.verifyAndCreditWallet(req.user._id, req.body);
 
-    // A. Fetch verified amount from Razorpay
-    const order = await razorpay.orders.fetch(razorpay_order_id);
-    if (!order) throw new Error("Razorpay order not found");
-    
-    const amountInRupees = order.amount / 100;
-
-    // B. Find or Create Wallet (with session)
-    let wallet = await Wallet.findOne({ userId }).session(session);
-
-    if (!wallet) {
-      const newWallets = await Wallet.create([{
-        userId,
-        balance: 0,
-        currency: "INR"
-      }], { session });
-      wallet = newWallets[0];
+    if (!result.success) {
+      return res.status(result.statusCode).json({ message: result.message });
     }
 
-    // C. Calculate New Balance
-    const newBalance = wallet.balance + amountInRupees;
-
-    // D. Update Wallet
-    wallet.balance = newBalance;
-    await wallet.save({ session });
-
-    // E. Update User Cache (Denormalized field)
-    await User.updateOne(
-      { _id: userId },
-      { walletBalance: newBalance },
-      { session }
-    );
-
-    // F. Create Ledger Entry (Transaction)
-    await Transaction.create([{
-      userId,
-      type: "TOPUP",
-      amount: amountInRupees,
-      balanceAfter: newBalance,
-      referenceId: razorpay_payment_id, // Important: Link to Razorpay ID
-      status: "success"
-    }], { session });
-
-    // G. Clear Redis Cache (So dashboard updates instantly)
-    // Note: We do this *before* commit, or right after. 
-    // If we do it here and commit fails, the cache clears but old data reloads. That's fine.
-    await redis.del(`dashboard:${userId}`);
-
-    // H. COMMIT
-    await session.commitTransaction();
-    session.endSession();
-
-    return res.status(200).json({
-      success: true,
-      message: `Successfully added ₹${amountInRupees}`,
-      balance: newBalance,
-    });
-
+    return res.status(result.statusCode).json(result.data);
   } catch (error) {
-    // I. ROLLBACK ON FAILURE
-    await session.abortTransaction();
-    session.endSession();
-    
     console.error("Payment Verification Failed:", error);
     next(error);
   }
 };
 
 
-// @desc when paying for session , money debits from balance. not a controller func , only a session helper.
-export const debitWallet = async ({
-  userId,
-  amount,
-  referenceId = null,
-  reason = "SESSION",
-  session,
-}) => {
-  // basic validation (developer error, not user error)
-  if (typeof amount !== "number" || amount <= 0) {
-    throw new Error("Invalid debit amount");
-  }
 
-  if (!session) {
-    throw new Error("Mongo session is required");
-  }
-
-  const wallet = await Wallet.findOne({ userId }).session(session);
-  // console.log(wallet);
-
-  // ❗ business-rule failure → return status, DO NOT throw
-  if (!wallet) {
-    return {
-      success: false,
-      error: "WALLET_NOT_FOUND",
-    };
-  }
-
-  // ❗ business-rule failure → return status, DO NOT throw
-  if (wallet.balance < amount) {
-    return {
-      success: false,
-      error: "INSUFFICIENT_BALANCE",
-    };
-  }
-
-  const newBalance = wallet.balance - amount;
-
-  // update wallet
-  wallet.balance = newBalance;
-  await wallet.save({ session });
-
-  // update cached balance
-  await User.updateOne(
-    { _id: userId },
-    { walletBalance: newBalance },
-    { session }
-  );
-  await redis.del(`dashboard:${userId}`);
-  // ledger entry
-  await WalletTransaction.create(
-    [
-      {
-        userId,
-        type: reason,
-        amount,
-        balanceAfter: newBalance,
-        referenceId,
-        status: "success",
-      },
-    ],
-    { session }
-  );
-
-  return {
-    success: true,
-    balance: newBalance,
-  };
-};
 
 
 // @desc    Get full wallet transaction history with pagination
 // @route   GET /api/wallet/history?page=1&limit=20
-export const getWalletHistory = async (req, res) => {
+export const getWalletHistory = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
 
-    const query = { userId };
+    const result = await walletService.getWalletHistory(userId, page, limit);
 
-    const transactions = await WalletTransaction.find(query)
-      .sort({ createdAt: -1 }) // Newest first
-      .skip(skip)
-      .limit(limit);
+    if (!result.success) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
 
-    const total = await WalletTransaction.countDocuments(query);
-
-    res.status(200).json({
-      transactions,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalTransactions: total,
-      }
-    });
+    return res.status(result.statusCode).json(result.data);
 
   } catch (error) {
     console.error("Wallet History Error:", error);
-    res.status(500).json({ message: "Server error" });
+    next(error); // Passes to your global error handler
   }
 };
 

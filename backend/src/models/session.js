@@ -23,7 +23,7 @@ const sessionSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "assigned", "ongoing", "completed", "cancelled"],
+      enum: ["pending", "assigned", "ongoing", "completed", "cancelled", "escalated"],
       default: "pending",
     },
 
@@ -86,7 +86,19 @@ const sessionSchema = new mongoose.Schema(
       min: 0,
     },
 
-    // NEW: The active Google Meet link (Before/During session)
+    listenerPayout: { 
+      type: Number, 
+      default: 0 
+    },
+    platformFee: { 
+      type: Number, 
+      default: 0 
+    },
+    payoutStatus: { 
+      type: String, 
+      enum: ['pending', 'paid'], 
+      default: 'pending' 
+    },
     meetLink: {
       type: String,
       default: "", 
@@ -113,7 +125,7 @@ const sessionSchema = new mongoose.Schema(
     // NEW: Track status changes for the dashboard UI
     timeline: [
       {
-        status: { type: String, enum: ["created", "assigned", "started", "completed", "cancelled"] },
+        status: { type: String, enum: ["created", "assigned", "started", "completed", "cancelled" , "escalated"] },
         time: { type: Date, default: Date.now },
         note: String // e.g., "Assigned by Admin John"
       }
@@ -121,10 +133,6 @@ const sessionSchema = new mongoose.Schema(
     attendance: {
       userJoinedAt: { type: Date, default: null },
       listenerJoinedAt: { type: Date, default: null },
-      
-      // If true, it means they showed up but left/disconnected
-      userWasPresent: { type: Boolean, default: false },
-      listenerWasPresent: { type: Boolean, default: false }
     },
   },
   { timestamps: true }

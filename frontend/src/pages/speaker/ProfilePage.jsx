@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; // Don't forget this import
 import { User, Mail, Save, Camera, AlertCircle, Loader2, CheckCircle, Lock, ArrowLeft, LogOut } from 'lucide-react';
-import axiosInstance from "../utils/axiosInstance";
-import API_PATHS from "../utils/apiPaths";
-import { useAuth } from "../context/useAuth";
+import axiosInstance from "../../utils/axiosInstance";
+import API_PATHS from "../../utils/apiPaths";
+import { useAuth } from "../../context/useAuth";
 
 const ProfilePage = () => {
   const { user, login, logout } = useAuth(); // Added logout here
@@ -65,7 +65,7 @@ const ProfilePage = () => {
   const handleVerifyEmail = async () => {
     setVerifying(true);
     try {
-      const res = await axiosInstance.post(API_PATHS.AUTH.VERIFY_EMAIL_OTP, { otp }); // Ensure path matches
+      const res = await axiosInstance.post(API_PATHS.AUTH.VERIFY_EMAIL_CHANGE, { otp }); // Ensure path matches
       setStatus({ type: "success", message: "Email verified & updated!" });
       setShowOtpModal(false);
       login({ ...user, email: res.data.email }); 
