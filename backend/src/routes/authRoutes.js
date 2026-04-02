@@ -26,7 +26,7 @@ router.post("/register", registerUser);
 
 router.post("/verify", otpVerifyLimiter("register"),verifyOtp);
 
-router.post("/resend-otp", otpResendLimiter, resendOtp); 
+router.post("/resend-otp", otpResendLimiter("register"), resendOtp); 
 
 router.post("/login",rateLimiter({
     windowSeconds: 300, // 5 min

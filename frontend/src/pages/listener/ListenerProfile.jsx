@@ -9,6 +9,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import { useAuth } from "../../context/useAuth";
 import toast from "react-hot-toast";
+import SolanceLoader from "../../components/layout/SolanceLoader";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -92,7 +93,7 @@ const ListenerProfile = () => {
     toast.success("Logged out successfully");
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#173F3A]" size={40}/></div>;
+  if (loading) return <SolanceLoader/>
 
   return (
     <div className="min-h-screen bg-[#FDFCF8] p-6 md:p-10 font-sans text-[#2D2A26]">

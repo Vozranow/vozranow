@@ -1,5 +1,6 @@
+'use client';
 import axios from "axios";
-
+import fixWebmDuration from 'fix-webm-duration';
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -13,6 +14,10 @@ import { useScreenRecorder } from "../hooks/useScreenRecorder";
 import axiosInstance from "../utils/axiosInstance";
 import API_PATHS from "../utils/apiPaths"; 
 import { ENV } from "../utils/env";
+
+// 🟢 NEW REUSABLE COMPONENTS
+import NotificationPill from "../components/layout/NotificationPill";
+import ActionModal from "../components/layout/ActionModal";
 
 // --- TYPING INDICATOR COMPONENT ---
 const TypingIndicator = () => (
@@ -46,6 +51,10 @@ const LobbyPage = () => {
   const [linkInput, setLinkInput] = useState("");
   const [linkError, setLinkError] = useState("");
   
+  // 🟢 NEW: GLOBAL UI STATE
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+  const [modalConfig, setModalConfig] = useState({ isOpen: false });
+  
   // --- LOGIC STATE (Session & Recording) ---
   const [socket, setSocket] = useState(null);
   const [status, setStatus] = useState("verifying"); 
@@ -55,6 +64,7 @@ const LobbyPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [sessionData, setSessionData] = useState(null);
+  const recordingStartTimeRef = useRef(null);
 
   const isListener = user?.role === "listener";
   const isPeerOnline = Array.from(onlineUsers).some(id => id !== user?._id);
@@ -76,17 +86,22 @@ const LobbyPage = () => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isRecording, sessionStatus]);
 
+  // 🟢 HELPER: Show Notification
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => setNotification({ show: false, message: '', type: '' }), 4000);
+  };
+
   // 1️⃣ INITIAL SETUP
   useEffect(() => {
     let newSocket = null;
 
     const initLobby = async () => {
       try {
-        // 🔒 STEP A: Gatekeeper
         setStatus("verifying");
         const { data } = await axiosInstance.get(API_PATHS.SESSION.CAN_JOIN(sessionId));
         setSessionData(data.session);
-        // 📜 STEP B: Fetch History
+        
         setStatus("connecting");
         const historyRes = await axiosInstance.get(API_PATHS.SESSION.GET_MESSAGES(sessionId));
         setMessages(historyRes.data);
@@ -94,7 +109,6 @@ const LobbyPage = () => {
         const lastLinkMsg = historyRes.data.findLast(m => m.type === 'link');
         if (lastLinkMsg) setMeetLink(lastLinkMsg.content);
 
-        // 🔌 STEP C: Connect Socket
         newSocket = io(ENV.BACKEND_URL, {
           withCredentials: true,
           transports: ['websocket'],
@@ -103,19 +117,15 @@ const LobbyPage = () => {
 
         setSocket(newSocket);
 
-        // --- SOCKET LISTENERS ---
-
         newSocket.on("connect", () => {
           setStatus("connected");
           newSocket.emit("join_lobby", { sessionId });
         });
 
-        // 🟢 Presence
         newSocket.on("presence_update", ({ onlineUsers }) => {
            setOnlineUsers(new Set(onlineUsers));
         });
 
-        // 🔄 Sync (Refresh Fix)
         newSocket.on("session_sync", (data) => {
           setSessionStatus(data.status);
           if (data.meetLink) setMeetLink(data.meetLink);
@@ -126,22 +136,18 @@ const LobbyPage = () => {
           }
         });
 
-        // ▶️ Session Start
         newSocket.on("session_started", () => {
           setSessionStatus("ongoing");
           setSessionTimer(0);
         });
 
-        // ⏹️ Session End
         newSocket.on("session_ended", () => {
           setSessionStatus("ended");
           if (!isListener) {
-             // Just send them to the URL. The Feedback page handles the rest!
              setTimeout(() => navigate(`/session/${sessionId}/feedback`), 1500); 
           }
         });
 
-        // 📨 Messages
         newSocket.on("receive_message", (msg) => {
           setMessages((prev) => [...prev, msg]);
           if (msg.type === 'link') setMeetLink(msg.content);
@@ -149,7 +155,6 @@ const LobbyPage = () => {
 
         newSocket.on("link_shared", (data) => setMeetLink(data.link));
 
-        // ⌨️ Typing
         newSocket.on("user_typing", ({ user: typingUser }) => {
           if (typingUser !== user.username) {
             setTypingUsers((prev) => new Set(prev).add(typingUser));
@@ -183,11 +188,8 @@ const LobbyPage = () => {
     };
   }, [sessionId, user]);
    
-  // Put this anywhere inside your LobbyPage component
   useEffect(() => {
-    // If the database says ongoing, but the recording stopped unexpectedly...
     if (sessionStatus === "ongoing" && !isRecording && recordingBlob) {
-       // Force the socket to wrap up the session
        socket.emit("end_session", { sessionId });
     }
   }, [isRecording, sessionStatus, recordingBlob]);
@@ -218,70 +220,102 @@ const LobbyPage = () => {
   }, [recordingBlob]);
 
   const handleUploadRecording = async () => {
-    setIsUploading(true);
-    try {
-      const { data: presignedData } = await axiosInstance.post(API_PATHS.LISTENER.UPLOAD_URL, {
-        sessionId,
-        fileType: 'video/webm'
-      });
+  setIsUploading(true);
+  try {
+    const { data: presignedData } = await axiosInstance.post(API_PATHS.LISTENER.UPLOAD_URL, {
+      sessionId,
+      fileType: 'video/webm'
+    });
 
-
-      await axios.put(presignedData.uploadUrl, recordingBlob, {
-        headers: { 'Content-Type': 'video/webm' },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percent);
-        },
-        withCredentials: false, // VERY IMPORTANT
-      });
-
-      await axiosInstance.post(API_PATHS.SESSION.COMPLETE, {
-        sessionId,
-        recordingUrl: presignedData.publicUrl
-      });
-
-      navigate('/listener/dashboard');
-    } catch (err) {
-      alert("Upload failed! Backup downloaded.");
-      setIsUploading(false);
-      console.log(err)
-      // Even if upload failed, mark session complete
-      // await axiosInstance.post(API_PATHS.SESSION.COMPLETE, { sessionId, recordingUrl: null });
-      navigate('/listener/dashboard');
+    if (!recordingStartTimeRef.current) {
+        throw new Error("Recording start time was lost!");
     }
-  };
+    const durationMs = Date.now() - recordingStartTimeRef.current; 
+
+    const fixedBlob = await new Promise((resolve, reject) => {
+      try {
+        fixWebmDuration(recordingBlob, durationMs, (fixed) => {
+          resolve(fixed);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+
+    await axios.put(presignedData.uploadUrl, fixedBlob, { 
+      headers: { 'Content-Type': 'video/webm' },
+      onUploadProgress: (progressEvent) => {
+        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        setUploadProgress(percent);
+      },
+      withCredentials: false, 
+    });
+
+    await axiosInstance.post(API_PATHS.SESSION.COMPLETE, {
+      sessionId,
+      recordingUrl: presignedData.publicUrl
+    });
+
+    showNotification("Upload successful!", "success");
+    navigate('/listener/dashboard');
+  } catch (err) {
+    // 🟢 REPLACED ALERT WITH NOTIFICATION
+    showNotification("Upload failed! Backup downloaded.", "error");
+    setIsUploading(false);
+    console.error("Upload Error:", err);
+    navigate('/listener/dashboard');
+  }
+};
 
   // 4️⃣ HANDLERS
-  
   const handleStartSession = async () => {
     if (!isListener) return;
     try {
       await startRecording(); 
+      recordingStartTimeRef.current = Date.now();
       socket.emit("start_session", { sessionId });
     } catch (e) {
-      // alert("Please allow screen recording permissions.");
+      showNotification("Please allow screen recording permissions.", "error");
     }
   };
 
   const handleEndSession = async () => {
     if (!isListener) return;
 
-    // Zombie Check (Recovery Mode)
+    // 🟢 REPLACED WINDOW.CONFIRM WITH ACTION MODAL (Recovery Mode)
     if (sessionStatus === "ongoing" && !isRecording) {
-       if (window.confirm("Recording was lost due to refresh. End session anyway?")) {
-         socket.emit("end_session", { sessionId });
-        //  await axiosInstance.post(API_PATHS.SESSION.COMPLETE, { sessionId, recordingUrl: null });
-         navigate('/listener/dashboard');
-       }
-       return;
+      setModalConfig({
+        isOpen: true,
+        title: "Recording Lost",
+        description: "Recording was lost due to an unexpected refresh. Do you want to force end the session anyway?",
+        confirmText: "Force End",
+        confirmColor: "bg-red-600 hover:bg-red-700",
+        icon: AlertCircle,
+        iconColor: "bg-red-50 text-red-600",
+        onConfirm: () => {
+          socket.emit("end_session", { sessionId });
+          setModalConfig({ isOpen: false });
+          navigate('/listener/dashboard');
+        }
+      });
+      return;
     }
 
-    if (window.confirm("Are you sure you want to end the session?")) {
-      stopRecording(); // Triggers upload effect
-      socket.emit("end_session", { sessionId });
-    }
+    // 🟢 REPLACED WINDOW.CONFIRM WITH ACTION MODAL (Normal End)
+    setModalConfig({
+      isOpen: true,
+      title: "End Session",
+      description: "Are you sure you want to end the session? This will finalize the meeting and securely upload the recording.",
+      confirmText: "End Session",
+      confirmColor: "bg-red-600 hover:bg-red-700",
+      icon: StopCircle,
+      iconColor: "bg-red-50 text-red-600",
+      onConfirm: () => {
+        stopRecording(); // Triggers upload effect
+        socket.emit("end_session", { sessionId });
+        setModalConfig({ isOpen: false });
+      }
+    });
   };
 
   const handleLeaveSession = () => {
@@ -378,6 +412,10 @@ const LobbyPage = () => {
   return (
     <div className="flex flex-col h-screen bg-[#FDFCF8] text-[#2D2A26] font-sans">
       
+      {/* 🟢 GLOBAL UI COMPONENTS */}
+      <NotificationPill notification={notification} />
+      <ActionModal {...modalConfig} onClose={() => setModalConfig({ isOpen: false })} />
+
       {/* 🟢 HEADER */}
       <div className="px-4 md:px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between shadow-sm z-10">
         <div className="flex items-center gap-3">
@@ -467,16 +505,13 @@ const LobbyPage = () => {
         {messages.map((msg, index) => {
           const myId = (user?._id || user?.id)?.toString();
 
-          // 2. Grab the sender's ID (Handle both populated objects and raw strings)
           let rawSenderId = msg.senderId;
           if (typeof msg.senderId === 'object' && msg.senderId !== null) {
             rawSenderId = msg.senderId._id || msg.senderId.id;
           }
           const senderId = rawSenderId?.toString();
 
-          // 3. The Moment of Truth
           const isMe = myId === senderId;
-
           const senderName = typeof msg.senderId === 'object' ? msg.senderId.username : "User";
           const isSystem = msg.type === "system";
           const isLink = msg.type === "link";
@@ -495,7 +530,6 @@ const LobbyPage = () => {
              );
           }
 
-          // 👇 CORRECT CSS: Using flex-col with items-end/start (Not justify)
           return (
             <div key={index} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
               <div 

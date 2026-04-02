@@ -17,13 +17,20 @@ axiosInstance.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
-    if (originalRequest.url.includes("/login")) {
-   
-   return Promise.reject(error);
-}
+    
+    // 🟢 Ignore public auth routes so they show their actual backend error messages
+    if (
+      originalRequest.url.includes("/login") || 
+      originalRequest.url.includes("/forgot-password") ||
+      originalRequest.url.includes("/register") 
+    ) {
+       return Promise.reject(error);
+    }
+    
     if (originalRequest.url.includes(API_PATHS.AUTH.REFRESH)) {
-  return Promise.reject(error);  //if the refresh endpt itself fails ie token has expired ; login again
-}
+       return Promise.reject(error);  //if the refresh endpt itself fails ie token has expired ; login again
+    }
+    
     if (
       error.response?.status === 401 &&
       !originalRequest._retry
@@ -33,9 +40,7 @@ axiosInstance.interceptors.response.use(
       try {
         await axiosInstance.post(API_PATHS.AUTH.REFRESH);
         return axiosInstance(originalRequest);
-      }catch (refreshError) {
-        // Refresh failed → force logout
-        // window.location.href = "/login";
+      } catch (refreshError) {
         return Promise.reject(refreshError);
       }
     }

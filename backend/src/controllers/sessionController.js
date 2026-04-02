@@ -1,186 +1,25 @@
 import mongoose from "mongoose";
 import Session from "../models/session.js";
-import { debitWallet } from "./walletController.js";
+import { debitWallet } from "../services/walletServices.js";
 import { SESSION_PLANS } from "../config/sessionPlans.js";
 import redis from "../lib/redis.js";
 import listenerProfile from "../models/listenerProfile.js";
+import * as sessionService from '../services/sessionService.js';
 
 // @desc for applying session by user and debiting money from wallet after booking the session
 export const applyForSession = async (req, res, next) => {
-  const userId = req.user._id;
-
-  const {
-    scheduledDate,
-    preferredTimeStart,
-    preferredTimeEnd,
-    plan,
-  } = req.body;
-
-  // Validate required fields
-  if (!scheduledDate || !preferredTimeStart || !preferredTimeEnd || !plan) {
-    return res.status(400).json({
-      message: "scheduledDate, preferredTimeStart, preferredTimeEnd and plan are required",
-    });
-  }
-
-  //  Parse dates
-  const dateOnly = new Date(scheduledDate);
-  const windowStart = new Date(preferredTimeStart);
-  const windowEnd = new Date(preferredTimeEnd);
-
-  if (
-    isNaN(dateOnly.getTime()) ||
-    isNaN(windowStart.getTime()) ||
-    isNaN(windowEnd.getTime())
-  ) {
-    return res.status(400).json({ message: "Invalid date/time values" });
-  }
-
-
-  // Helper to get IST hours
-  const getISTHour = (date) => {
-    return parseInt(date.toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata",
-      hour: "numeric",
-      hour12: false,
-    }), 10);
-  };
-
-  const startHourIST = getISTHour(windowStart);
-  const endHourIST = getISTHour(windowEnd);
-
-  // Rule 1: Start time cannot be between 00:00 (12 AM) and 07:59 (8 AM)
-  // if (startHourIST >= 0 && startHourIST < 8) {
-  //   return res.status(400).json({
-  //     message: "Sessions cannot be booked between 12 AM and 8 AM IST.",
-  //   });
-  // }
-
-  // Rule 2: Ensure window belongs to scheduledDate (Matches YYYY-MM-DD)
-  // We compare just the date string part
-  const dateString = dateOnly.toISOString().split('T')[0];
-  const startString = windowStart.toISOString().split('T')[0];
-  const endString = windowEnd.toISOString().split('T')[0];
-
-  // if (startString !== dateString) {
-  //    return res.status(400).json({ message: "Start time must be on the Scheduled Date." });
-  // }
-
-  // Rule 3: End time Edge Case (Spilling over to next day)
-  // If endString is different, it means they selected 11:00 PM - 1:00 AM (Next Day)
-  // if (endString !== dateString) {
-  //    return res.status(400).json({ 
-  //      message: "Session window cannot cross midnight (12 AM). Please finish before 11:59 PM.",
-  //    });
-  // }
-
- 
-  //Validate window logic (Duration)
-  if (windowEnd <= windowStart) {
-    return res.status(400).json({
-      message: "preferredTimeEnd must be after preferredTimeStart",
-    });
-  }
-
-  const windowMinutes = (windowEnd - windowStart) / (1000 * 60);
-  
-  // Strict 2-3 Hour Window Check
-  if (windowMinutes < 120 || windowMinutes > 180) {
-    return res.status(400).json({
-      message: "Preferred time window must be between 2 to 3 hours.",
-    });
-  }
-
-  // Validate plan
-  const selectedPlan = SESSION_PLANS[plan];
-  if (!selectedPlan) {
-    return res.status(400).json({ message: "Invalid session plan" });
-  }
-
-  const { duration, price } = selectedPlan;
-
-  const session = await mongoose.startSession();
-
   try {
-    session.startTransaction();
-
-    // Create session request
-    const created = await Session.create(
-      [
-        {
-          userId,
-          scheduledDate: dateOnly,
-          preferredTimeStart: windowStart,
-          preferredTimeEnd: windowEnd,
-          scheduledStartAt: null,
-          status: "pending",
-          bookedDurationMinutes: duration,
-          price,
-          timeline: [{
-             status: "created",
-             time: new Date(),
-             note: "Session booked by user"
-          }]
-        },
-      ],
-      { session }
-    );
-
-    const newSession = created[0];
-
-    // Debit wallet
-    const result = await debitWallet({
-      userId,
-      amount: price,
-      referenceId: newSession._id,
-      reason: "SESSION",
-      session, 
-    });
+    const userId = req.user._id;
+    const result = await sessionService.applyForSession(userId, req.body);
 
     if (!result.success) {
-      if (session.inTransaction()) {
-        await session.abortTransaction();
-      }
-
-      // Handle specific wallet errors
-      if (result.error === "WALLET_NOT_FOUND") {
-        return res.status(400).json({ message: "Please add money to wallet first" });
-      }
-      if (result.error === "INSUFFICIENT_BALANCE") {
-        return res.status(400).json({ message: "Insufficient wallet balance" });
-      }
-      // Catch-all for other wallet errors
-      return res.status(500).json({ message: "Wallet transaction failed" });
+      return res.status(result.statusCode).json({ message: result.message });
     }
 
-    await session.commitTransaction();
-    session.endSession();
-
-    // Clear Cache
-    await redis.del(`dashboard:${userId}`);
-
-    await redis.del(`user:${userId}`);
-
-    return res.status(201).json({
-      message: "Session request created successfully",
-      session: {
-        id: newSession._id,
-        status: newSession.status,
-        scheduledDate: newSession.scheduledDate,
-        preferredWindow: {
-          start: newSession.preferredTimeStart,
-          end: newSession.preferredTimeEnd,
-        },
-        duration: newSession.bookedDurationMinutes,
-        price: newSession.price,
-      },
-    });
+    return res.status(result.statusCode).json(result.data);
 
   } catch (err) {
-    if (session.inTransaction()) {
-       await session.abortTransaction();
-    }
-    session.endSession();
+    console.error("Apply for Session Error:", err);
     next(err);
   }
 };
@@ -382,7 +221,7 @@ export const completeSession = async (req, res) => {
     // 1️⃣ Calculate Duration
     const endedAt = new Date();
     // Fallback to createdAt if actualStartAt is missing (e.g. if they started immediately)
-    const startTime = session.startedAt; 
+    const startTime = session.startedAt || session.createdAt; 
     const durationMs = endedAt - new Date(startTime);
     const durationMinutes = Math.floor(durationMs / 60000); 
 
@@ -392,7 +231,7 @@ export const completeSession = async (req, res) => {
     session.endedAt = endedAt;
     session.actualDurationMinutes = durationMinutes > 0 ? durationMinutes : 1; // Minimum 1 min
 
-    // 🕒 TIMELINE UPDATE (The new part!)
+    // 🕒 TIMELINE UPDATE 
     session.timeline.push({
       status: "completed",
       time: endedAt,
@@ -401,19 +240,25 @@ export const completeSession = async (req, res) => {
     
     await session.save();
 
+    // 🟢 NEW: Get the exact listener payout. 
+    // Fallback to 80% of price ONLY IF it's an old pending session from before the schema update.
+    const earningsToAdd = session.listenerPayout !== undefined 
+      ? session.listenerPayout 
+      : (session.price * 0.80);
+
     // 3️⃣ UPDATE LISTENER PROFILE STATS
-    // We increment the total sessions and total minutes
+    // We increment the total sessions and total earnings (with the platform fee deducted!)
     await listenerProfile.findOneAndUpdate(
       { userId: session.listenerId },
       {
         $inc: {
-          totalSessionsCompleted: 1 ,
-           totalEarnings: session.price
+          totalSessionsCompleted: 1,
+          totalEarnings: earningsToAdd // 👈 Uses the correct payout value
         }
       }
     );
 
-    res.status(200).json({ success: true});
+    res.status(200).json({ success: true });
 
   } catch (error) {
     console.error("Complete Session Error:", error);

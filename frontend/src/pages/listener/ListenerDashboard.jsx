@@ -8,6 +8,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import toast from "react-hot-toast";
+import SolanceLoader from "../../components/layout/SolanceLoader";
 
 const ListenerDashboard = () => {
   const navigate = useNavigate();
@@ -132,7 +133,7 @@ const ListenerDashboard = () => {
     }
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#173F3A]" size={40}/></div>;
+  if (loading) return <SolanceLoader/>
 
   const { user, overview, monthlyEarnings } = data;
 

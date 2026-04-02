@@ -24,6 +24,8 @@ const API_PATHS = {
     GET_REQUESTS: "/api/admin/requests", 
     FIND_LISTENERS: (sessionId) => `/api/admin/find-listeners/${sessionId}`, 
     ASSIGN_SESSION: (sessionId) => `/api/admin/sessions/${sessionId}/assign`,
+    PROFILE: "/api/admin/profile",     
+    HISTORY: "/api/admin/history",
   },
 
   LISTENER: {
@@ -38,7 +40,19 @@ const API_PATHS = {
   
   MANAGER: {
     GET_PENDING_APPS: "/api/applications/pending",
-    REVIEW_APP: (appId) => `/api/applications/application/${appId}/review`, // Approve/Reject
+    REVIEW_APP: (appId) => `/api/applications/application/${appId}/review`, 
+    GET_METRICS: "/api/manager/metrics",
+    
+    // Financials
+    GET_FINANCIALS: "/api/manager/financials",
+    PROCESS_PAYOUT: "/api/manager/payout", 
+    
+    // Directory Management
+    GET_LISTENERS: "/api/manager/directory/listeners",
+    BAN_LISTENER: (listenerId) => `/api/manager/directory/listeners/${listenerId}/ban`,
+    
+    // 🟢 NEW: Session Audit Logs
+    GET_SESSION_LOGS: "/api/manager/sessions",
   },
 
 

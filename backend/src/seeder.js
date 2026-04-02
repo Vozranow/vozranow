@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import User from "./models/users.js"; 
 import ListenerProfile from "./models/listenerProfile.js"; 
-import Session from "./models/session.js"; // 👈 Updated to match your file name
+import Session from "./models/session.js"; 
 import { connectDB } from "./lib/db.js";
 
 const seed = async () => {
@@ -71,7 +71,7 @@ const seed = async () => {
         email: "john@test.com",
         online: true,
         days: ["Mon", "Tue"],
-        sessions: 1,
+        sessions: 5, // Bumped slightly so math works better
         rating: 5.0,
         bio: "Good listener, here to help."
       },
@@ -110,14 +110,6 @@ const seed = async () => {
       "Helped me clear my mind.", "Life changing conversation.", "Highly recommended!"
     ];
 
-    // Helper: Random date in past 30 days
-    const getRandomDate = () => {
-      const d = new Date();
-      d.setDate(d.getDate() - Math.floor(Math.random() * 30));
-      d.setHours(Math.floor(Math.random() * 12) + 8); // 8 AM - 8 PM
-      return d;
-    };
-
     // 6. Loop Listeners -> Create Profile -> Create 5 Completed Sessions
     for (const l of listenersData) {
       
@@ -131,13 +123,20 @@ const seed = async () => {
         walletBalance: 1000
       });
 
+      // 🟢 Calculate Financials (Assuming $400 listener payout per session)
+      const totalLifetimeEarnings = l.sessions * 400;
+      // We are going to make 2 recent sessions "pending" (2 * 400 = 800)
+      const pendingAmount = 800; 
+      const paidOutAmount = Math.max(0, totalLifetimeEarnings - pendingAmount);
+
       // B. Create Profile
       await ListenerProfile.create({
         userId: user._id,
         isOnline: l.online,
         preferredDays: l.days,
         totalSessionsCompleted: l.sessions,
-        totalEarnings: l.sessions * 400,
+        totalEarnings: totalLifetimeEarnings, 
+        totalPaidOut: paidOutAmount, // 👈 New field populated!
         bio: l.bio,
         rating: {
           average: l.rating,
@@ -145,20 +144,27 @@ const seed = async () => {
         }
       });
 
-      // C. Create Session History
+      // C. Create Session History (Mix of Pending and Paid)
       const sessionDocs = [];
       for (let i = 0; i < 5; i++) {
         const randomSeekerId = seekerIds[Math.floor(Math.random() * seekerIds.length)];
-        const date = getRandomDate();
-        const endTime = new Date(date.getTime() + 60 * 60 * 1000); // 1 hr duration
+        
+        // 🟢 THE MIX: First 2 are recent & pending. Last 3 are older & paid.
+        const isPending = i < 2; 
+        const daysAgo = isPending ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * 20) + 20;
+        
+        const date = new Date();
+        date.setDate(date.getDate() - daysAgo);
+        date.setHours(Math.floor(Math.random() * 12) + 8); 
+        
+        const endTime = new Date(date.getTime() + 60 * 60 * 1000); 
 
         sessionDocs.push({
           userId: randomSeekerId,
           listenerId: user._id,
-          assignedBy: user._id, // Self-assigned for mock data
+          assignedBy: staff[0]._id, // Assigned by SuperAdmin
           status: "completed",
           
-          // Dates
           scheduledDate: date,
           preferredTimeStart: date,
           preferredTimeEnd: endTime,
@@ -166,14 +172,16 @@ const seed = async () => {
           startedAt: date,
           endedAt: endTime,
           
-          // Stats
           bookedDurationMinutes: 60,
           actualDurationMinutes: 60,
-          price: 500,
           
-          // ✅ THE REVIEW (1-5 Rating)
+          // 🟢 THE NEW FINANCIAL ENGINE FIELDS
+          price: 500,
+          listenerPayout: 400,
+          platformFee: 100,
+          payoutStatus: isPending ? "pending" : "paid",
+          
           review: {
-            // Round the listener's avg rating to get an integer (e.g., 4.9 -> 5)
             rating: Math.round(l.rating), 
             comment: randomReviews[Math.floor(Math.random() * randomReviews.length)],
             createdAt: endTime
@@ -188,7 +196,7 @@ const seed = async () => {
       }
       
       await Session.insertMany(sessionDocs);
-      console.log(`✅ Created: ${l.name} + 5 Sessions`);
+      console.log(`✅ Created: ${l.name} + 5 Sessions (2 Pending, 3 Paid)`);
     }
 
     console.log("✨ All Data Imported Successfully!");

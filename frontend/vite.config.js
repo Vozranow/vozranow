@@ -18,13 +18,13 @@ export default defineConfig({
     proxy: {
       // 1. Proxy standard API calls
       '/api': {
-        target: 'http://172.28.208.1:3001', // 👈 Put your exact BACKEND IP and Port here
+        target: 'http://127.0.0.1:3001', // 👈 Put your exact BACKEND IP and Port here
         changeOrigin: true,
         secure: false, // Don't verify SSL on the backend
       },
       // 2. Proxy WebSocket connections
       '/socket.io': {
-        target: 'http://172.28.208.1:3001', // 👈 Put your exact BACKEND IP and Port here
+        target: 'http://127.0.0.1:3001', // 👈 Put your exact BACKEND IP and Port here
         ws: true,
         changeOrigin: true,
         secure: false,

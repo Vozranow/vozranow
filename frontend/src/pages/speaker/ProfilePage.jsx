@@ -65,7 +65,7 @@ const ProfilePage = () => {
   const handleVerifyEmail = async () => {
     setVerifying(true);
     try {
-      const res = await axiosInstance.post(API_PATHS.AUTH.VERIFY_EMAIL_OTP, { otp }); // Ensure path matches
+      const res = await axiosInstance.post(API_PATHS.AUTH.VERIFY_EMAIL_CHANGE, { otp }); // Ensure path matches
       setStatus({ type: "success", message: "Email verified & updated!" });
       setShowOtpModal(false);
       login({ ...user, email: res.data.email }); 

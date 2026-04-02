@@ -17,6 +17,12 @@ import { Toaster } from "react-hot-toast";
 import ListenerProfile from './pages/listener/ListenerProfile.jsx'
 import LobbyPage from './pages/LobbyPage.jsx'
 import FeedbackPage from './pages/speaker/FeedbackPage.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
+import AdminProfilePage from './pages/admin/AdminProfile.jsx'
+import ManagerDashboard from './pages/manager/ManagerDashboard.jsx'
+import ManagerFinancials from './pages/manager/ManagerFinancials.jsx'
+import ListenerDirectory from './pages/manager/ListenerDirect.jsx'
+import ManagerSessionLogs from './pages/manager/ManagerSessionLogs.jsx'
 
 function App() {
   console.log(ENV.BACKEND_URL);
@@ -56,6 +62,21 @@ function App() {
       <Route element={<ProtectedRoute allowedRoles={['user', 'listener']} />}>
         <Route path="/session/:sessionId/lobby" element={<LobbyPage />} />
       </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/profile" element={<AdminProfilePage />}/>
+        </Route>
+
+        {/* manager route */}
+
+        <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+          <Route path="/manager/dashboard" element={<ManagerDashboard />} />
+          <Route path="/manager/financials" element={<ManagerFinancials />} />
+          <Route path="/manager/listeners" element={<ListenerDirectory />} />
+          
+          <Route path="/manager/sessions" element={<ManagerSessionLogs />} />
+        </Route>
 
     </Routes>
     </>

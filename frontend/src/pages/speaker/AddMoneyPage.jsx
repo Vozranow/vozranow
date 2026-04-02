@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, Wallet, AlertTriangle, Loader2, CheckCircle2 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance.js";
 import API_PATHS from "../../utils/apiPaths.js";
-import { useAuth } from "../../context/useAuth.js"; // Assuming you have this
-import toast from "react-hot-toast";
-import { ENV } from "@/utils/env.js"
+import { useAuth } from "../../context/useAuth.js";
+import { ENV } from "@/utils/env.js";
+import SolanceLoader from "../../components/layout/SolanceLoader.jsx";
+
 // Helper to load Razorpay script dynamically
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -23,11 +24,15 @@ const AddMoneyPage = () => {
   
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // For input validation
+  const [alert, setAlert] = useState({ type: "", text: "" }); // 🟢 For API/Payment status
 
   const predefinedAmounts = [100, 500, 1000, 2000];
 
   const handlePayment = async () => {
+    // Clear previous alerts
+    setAlert({ type: "", text: "" });
+
     if (!amount || Number(amount) <= 0) {
       setError("Please enter a valid amount.");
       return;
@@ -51,13 +56,18 @@ const AddMoneyPage = () => {
 
       // 3. Open Razorpay Options
       const options = {
-        key: ENV.RAZORPAY_KEY, // Add this to your frontend .env
+        key: ENV.RAZORPAY_KEY, 
         amount: order.amount, 
         currency: "INR",
         name: "Solance",
         description: "Wallet Top-up",
-        image: "/logo.png", // Ensure you have a logo in public folder
         order_id: order.id,
+        modal: {
+          ondismiss: function() {
+            setLoading(false); // Instantly stop the button spinner
+            setAlert({ type: "error", text: "Payment was cancelled." });
+          }
+        },
         
         handler: async function (response) {
           // 4. Verify Payment on Backend
@@ -68,33 +78,21 @@ const AddMoneyPage = () => {
               razorpay_signature: response.razorpay_signature,
             });
 
-            if (verifyRes.data.success) {
-              toast.custom((t) => (
-                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
-                  <div className="flex-1 w-0 p-4">
-                    <div className="flex items-start">
-                      <div className="flex-shrink-0 pt-0.5">
-                         <CheckCircle2 className="h-10 w-10 text-green-500" />
-                      </div>
-                      <div className="ml-3 flex-1">
-                        <p className="text-sm font-medium text-gray-900">Payment Successful!</p>
-                        <p className="mt-1 text-sm text-gray-500">₹{amount} has been added to your wallet.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ));
-              navigate("/dashboard");
+            // Using status === 200 to safely catch the success response
+            if (verifyRes.status === 200 || verifyRes.data?.success) {
+              setAlert({ type: "success", text: `Payment Successful! ₹${amount} has been added to your wallet.` });
+              setTimeout(() => navigate("/dashboard"), 1500);
             }
           } catch (verifyError) {
              console.error("Verification failed:", verifyError);
-             toast.error("Payment verified failed. Contact support if money was deducted.");
+             setAlert({ type: "error", text: "Payment verification failed. Contact support if money was deducted." });
+             setLoading(false); // Make sure to stop loading on silent verify fail
           }
         },
         prefill: {
           name: user?.username || "",
           email: user?.email || "",
-          contact: "" // Optional
+          contact: "" 
         },
         theme: {
           color: "#173F3A",
@@ -102,17 +100,24 @@ const AddMoneyPage = () => {
       };
 
       const rzp1 = new window.Razorpay(options);
+      
+      // Handle User Closing Modal or Failing Payment
       rzp1.on("payment.failed", function (response) {
-        toast.error(response.error.description || "Payment failed");
+        setAlert({ type: "error", text: response.error.description || "Payment failed or was cancelled." });
+        setLoading(false); 
       });
+
+      
+
       rzp1.open();
 
     } catch (err) {
       console.error("Payment Error:", err);
-      toast.error(err.response?.data?.message || "Something went wrong initiating payment.");
-    } finally {
+      setAlert({ type: "error", text: err.response?.data?.message || err.message || "Something went wrong initiating payment." });
       setLoading(false);
-    }
+    } 
+    // Notice we removed the finally block setting loading to false here, 
+    // otherwise the button stops spinning while the Razorpay modal is still open!
   };
 
   return (
@@ -148,6 +153,7 @@ const AddMoneyPage = () => {
                 onChange={(e) => {
                    setAmount(e.target.value); 
                    setError("");
+                   setAlert({ type: "", text: "" }); // Clear API errors on change
                 }}
                 className="w-full pl-10 pr-4 py-4 text-3xl font-serif text-[#173F3A] bg-[#F8FAFC] border-2 border-transparent focus:border-[#173F3A]/20 rounded-2xl outline-none transition-all placeholder:text-gray-300"
                 placeholder="0"
@@ -162,7 +168,11 @@ const AddMoneyPage = () => {
             {predefinedAmounts.map((amt) => (
               <button
                 key={amt}
-                onClick={() => { setAmount(amt); setError(""); }}
+                onClick={() => { 
+                  setAmount(amt); 
+                  setError(""); 
+                  setAlert({ type: "", text: "" }); 
+                }}
                 className={`py-2 px-1 rounded-xl text-sm font-medium border transition-all ${
                   Number(amount) === amt 
                     ? "bg-[#173F3A] text-white border-[#173F3A]" 
@@ -185,13 +195,32 @@ const AddMoneyPage = () => {
              </div>
           </div>
 
+          {/* 🟢 Professional Inline Alert Box */}
+          {alert.text && (
+            <div className={`p-4 rounded-xl flex items-start gap-3 border ${
+              alert.type === "error" 
+                ? "bg-red-50 border-red-100 text-red-700" 
+                : "bg-emerald-50 border-emerald-100 text-emerald-700"
+            }`}>
+              {alert.type === "error" ? (
+                <AlertTriangle className="shrink-0 mt-0.5" size={18} />
+              ) : (
+                <CheckCircle2 className="shrink-0 mt-0.5" size={18} />
+              )}
+              <p className="text-sm font-medium leading-relaxed">{alert.text}</p>
+            </div>
+          )}
+
           {/* Payment Button */}
           <button 
             onClick={handlePayment}
             disabled={loading}
             className="w-full py-4 bg-[#173F3A] text-white rounded-xl font-medium text-lg hover:bg-[#0F2926] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-[#173F3A]/20"
           >
-            {loading ? <Loader2 className="animate-spin" /> : (
+            {loading ? <div className="flex items-center gap-2">
+              <Loader2 className="animate-spin" size={20} />
+              Processing...
+            </div> : (
                <>
                  <Wallet size={20} /> Proceed to Pay {amount ? `₹${amount}` : ""}
                </>
