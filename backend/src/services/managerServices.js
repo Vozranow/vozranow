@@ -475,3 +475,37 @@ export const getPlatformSessionLogs = async (page = 1, limit = 15, search = "") 
     throw error;
   }
 };
+
+
+
+export const getEscalatedSessionsService = async () => {
+  try {
+    // 1. Find all escalated sessions
+    const escalatedSessions = await Session.find({ status: "escalated" })
+      .populate("userId", "username")
+      .sort({ preferredTimeStart: 1 }) // Sort by closest deadline first
+      .lean(); // Use lean() for faster query performance since we don't need Mongoose document methods here
+
+    // 2. Format them exactly how the frontend modal expects them
+    const formattedSessions = escalatedSessions.map(session => ({
+      _id: session._id,
+      clientName: session.userId?.username || "Unknown User",
+      scheduledDate: session.scheduledDate,
+      preferredTimeStart: session.preferredTimeStart,
+      preferredTimeEnd: session.preferredTimeEnd,
+      duration: session.bookedDurationMinutes,
+      status: session.status
+    }));
+
+    // 3. Return using your project's standard response pattern
+    return {
+      success: true,
+      statusCode: 200,
+      data: formattedSessions
+    };
+
+  } catch (error) {
+    console.error("Fetch Escalated Error:", error);
+    throw error; // Throw it so the controller can catch it
+  }
+};

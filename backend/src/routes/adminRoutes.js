@@ -5,9 +5,9 @@ import { assignSession, getAdminMatchHistory, getAdminProfile, getListenersForAs
 const router = express.Router();
 
 router.get("/requests", protect,authorize("admin"),getPendingSessions);
-router.get("/find-listeners/:sessionId",protect,authorize("admin"),getListenersForAssignment);
+router.get("/find-listeners/:sessionId",protect,authorize("admin","manager"),getListenersForAssignment);
 
-router.put("/sessions/:id/assign", protect, authorize("admin"), assignSession);
+router.put("/sessions/:id/assign", protect, authorize("admin","manager"), assignSession);
 router.get('/history',protect, authorize("admin"), getAdminMatchHistory);
 
 router.get('/profile', protect, authorize("admin"),getAdminProfile);

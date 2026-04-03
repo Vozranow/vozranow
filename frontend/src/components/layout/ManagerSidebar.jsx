@@ -56,6 +56,14 @@ const ManagerSidebar = ({ isSidebarOpen }) => {
             />
           </Link>
           
+          <Link to="/manager/assign" className="block">
+            <SidebarItem 
+              icon={<ShieldAlert size={20}/>} 
+              label="Assign Session" 
+              active={currentPath === '/manager/logs'} 
+              isOpen={isSidebarOpen} 
+            />
+          </Link>
           <Link to="/manager/logs" className="block">
             <SidebarItem 
               icon={<ShieldAlert size={20}/>} 

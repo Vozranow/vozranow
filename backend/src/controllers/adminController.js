@@ -257,7 +257,7 @@ export const assignSession = async (req, res) => {
         return res.status(400).json({ message: "You must set a specific start time." });
     }
 
-    // 🟢 Validate Listener Exists & Role Check
+    // Validate Listener Exists & Role Check
     const listenerDoc = await User.findById(listenerId).select("username email role");
     if (!listenerDoc) {
         return res.status(404).json({ message: "Listener not found in database." });
@@ -270,17 +270,20 @@ export const assignSession = async (req, res) => {
     
     if (!session) return res.status(404).json({ message: "Session not found" });
     
-    if (session.status !== "pending") {
+    // NEW CHANGE: Allowed 'escalated' status so the Manager can use this endpoint too
+    if (session.status !== "pending" && session.status !== "escalated") {
         return res.status(400).json({ message: "Session already assigned or completed" });
     }
 
     // ---------------------------------------------------------
-    // 🚨 TIME WINDOW VALIDATION LOGIC START
+    // TIME WINDOW VALIDATION LOGIC START
     // ---------------------------------------------------------
 
-    const adminStart = new Date(finalStartTime);
+    // NEW CHANGE: Changed from const to let so potentialRollover can reassign it
+    let adminStart = new Date(finalStartTime);
     const userWindowStart = new Date(session.preferredTimeStart);
     const userWindowEnd = new Date(session.preferredTimeEnd);
+    
     if (adminStart < userWindowStart) {
         const potentialRollover = new Date(adminStart);
         potentialRollover.setDate(potentialRollover.getDate() + 1);
@@ -316,7 +319,39 @@ export const assignSession = async (req, res) => {
     }
 
     // ---------------------------------------------------------
-    // 🚨 VALIDATION END
+    // NEW CHANGE: ANTI-DOUBLE-BOOKING HARD BLOCK
+    // ---------------------------------------------------------
+    const adminStartMs = adminStart.getTime();
+    const adminEndMs = adminStartMs + durationInMs;
+
+    // 1. Get Start and End of the chosen day
+    const startOfDay = new Date(adminStart);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(adminStart);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // 2. Fetch all existing sessions for this listener on this day
+    const existingSessions = await Session.find({
+        listenerId: listenerId,
+        status: { $in: ["assigned", "ongoing"] },
+        scheduledStartAt: { $gte: startOfDay, $lte: endOfDay }
+    }).select("scheduledStartAt bookedDurationMinutes");
+
+    // 3. Mathematically check for any overlap
+    for (const existing of existingSessions) {
+        const existingStartMs = existing.scheduledStartAt.getTime();
+        const existingEndMs = existingStartMs + (existing.bookedDurationMinutes * 60 * 1000);
+
+        // Standard overlap formula: (Start A < End B) AND (End A > Start B)
+        if (adminStartMs < existingEndMs && adminEndMs > existingStartMs) {
+            const conflictStart = existing.scheduledStartAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            return res.status(400).json({ 
+                message: `CRITICAL OVERLAP: This listener already has a session booked from ${conflictStart}. Please select a different time.` 
+            });
+        }
+    }
+    // ---------------------------------------------------------
+    // VALIDATION END
     // ---------------------------------------------------------
 
     // Update Logic
@@ -340,7 +375,7 @@ export const assignSession = async (req, res) => {
         weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
     });
 
-    // 🟢 NEW: Queue Email for the User
+    // Queue Email for the User
     await emailQueue.add('assign-user', {
         type: 'SESSION_ASSIGNED_USER',
         to: user.email,
@@ -352,7 +387,7 @@ export const assignSession = async (req, res) => {
         }
     });
 
-    // 🟢 NEW: Queue Email for the Listener (Speaker)
+    // Queue Email for the Listener (Speaker)
     await emailQueue.add('assign-speaker', {
         type: 'SESSION_ASSIGNED_SPEAKER',
         to: listenerDoc.email,

@@ -51,8 +51,9 @@ const API_PATHS = {
     GET_LISTENERS: "/api/manager/directory/listeners",
     BAN_LISTENER: (listenerId) => `/api/manager/directory/listeners/${listenerId}/ban`,
     
-    // 🟢 NEW: Session Audit Logs
+    
     GET_SESSION_LOGS: "/api/manager/sessions",
+    GET_ESCALATED: "/api/manager/escalated",
   },
 
 

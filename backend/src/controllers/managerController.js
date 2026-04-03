@@ -105,3 +105,17 @@ export const getSessionLogs = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getEscalatedSessions = async (req, res) => {
+  try {
+    // Call the service to do the heavy lifting database queries
+    const result = await managerService.getEscalatedSessionsService();
+    
+    // Send back the standardized response object exactly as the frontend expects
+    res.status(result.statusCode).json(result.data);
+    
+  } catch (error) {
+    console.error("Fetch Escalated Controller Error:", error);
+    res.status(500).json({ message: "Failed to fetch escalated sessions" });
+  }
+};

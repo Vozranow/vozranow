@@ -23,6 +23,7 @@ import ManagerDashboard from './pages/manager/ManagerDashboard.jsx'
 import ManagerFinancials from './pages/manager/ManagerFinancials.jsx'
 import ListenerDirectory from './pages/manager/ListenerDirect.jsx'
 import ManagerSessionLogs from './pages/manager/ManagerSessionLogs.jsx'
+import ManagerAssignSession from './pages/manager/ManagerAssignSession.jsx'
 
 function App() {
   console.log(ENV.BACKEND_URL);
@@ -76,6 +77,7 @@ function App() {
           <Route path="/manager/listeners" element={<ListenerDirectory />} />
           
           <Route path="/manager/sessions" element={<ManagerSessionLogs />} />
+          <Route path="/manager/assign" element={<ManagerAssignSession />} />
         </Route>
 
     </Routes>
