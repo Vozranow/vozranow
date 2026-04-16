@@ -1,4 +1,3 @@
-// @refresh reset
 
 import { createContext, useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
@@ -37,11 +36,11 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await axiosInstance.post(API_PATHS.AUTH.LOGOUT);
-      setIsAuthenticated(false);
+      // setIsAuthenticated(false);
     } catch{
         
     }finally {
-      setUser(null);
+      // setUser(null);
       window.location.href = "/";
     }
   };

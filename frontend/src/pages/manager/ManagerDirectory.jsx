@@ -32,7 +32,7 @@ const ManagerDirectory = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get(`${API_PATHS.MANAGER.GET_LISTENERS}?page=${currentPage}&limit=10`);
-      setData(res.data.data);
+      setData(res.data);
     } catch (err) {
       showNotification("Failed to load staff directory.", "error");
     } finally {

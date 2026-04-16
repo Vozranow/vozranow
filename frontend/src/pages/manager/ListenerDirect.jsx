@@ -82,7 +82,7 @@ const ListenerDirectory = () => {
   return (
     <div className="flex h-screen bg-[#FDFCF8] font-sans text-[#2D2A26] overflow-hidden selection:bg-[#173F3A] selection:text-white relative">
       
-      {/* 🟢 CUSTOM NOTIFICATION PILL */}
+      {/* CUSTOM NOTIFICATION PILL */}
       {notification.show && (
         <div className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-full shadow-2xl flex items-center gap-3 z-50 transition-all duration-300 ${
           notification.type === 'success' ? 'bg-[#173F3A] text-white' : 'bg-red-600 text-white'
@@ -92,7 +92,7 @@ const ListenerDirectory = () => {
         </div>
       )}
 
-      {/* 🟢 BAN CONFIRMATION MODAL */}
+      {/* BAN CONFIRMATION MODAL */}
       {banModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2D2A26]/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
@@ -128,7 +128,7 @@ const ListenerDirectory = () => {
         </div>
       )}
 
-      {/* 🟢 QUICK VIEW PROFILE MODAL */}
+      {/* QUICK VIEW PROFILE MODAL */}
       {profileModal.isOpen && profileModal.listener && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-[#2D2A26]/20 backdrop-blur-sm transition-opacity">
           <div className="bg-white h-full w-full max-w-md shadow-2xl animate-in slide-in-from-right overflow-y-auto">

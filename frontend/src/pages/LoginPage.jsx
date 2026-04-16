@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import axiosInstance from "../utils/axiosInstance";
@@ -58,13 +58,21 @@ const LoginPage = () => {
     }
   };
 
-  // If already logged in, redirect or show message
+  useEffect(() => {
+    let timeout;
+    if (isAuthenticated) {
+      timeout = setTimeout(() => {
+        // You can leave this out if you rely on ProtectedRoute to redirect logged in users correctly
+        navigate("/dashboard"); 
+      }, 1000);
+    }
+    return () => clearTimeout(timeout);
+  }, [isAuthenticated, navigate]);
   if (isAuthenticated) {
-     setTimeout(() => navigate("/dashboard"), 1000);
      return (
         <div className="min-h-screen flex items-center justify-center bg-[#FDFCF8]">
            <div className="flex items-center gap-2 text-[#3A6B48] font-medium animate-pulse">
-              <Loader2 className="animate-spin" /> Redirecting to dashboard...
+              <Loader2 className="animate-spin" /> Redirecting...
            </div>
         </div>
      );

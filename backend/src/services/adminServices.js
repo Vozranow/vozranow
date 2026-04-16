@@ -57,7 +57,7 @@ export const getAdminProfileData = async (adminId) => {
     return { success: false, statusCode: 404, message: "Admin profile not found" };
   }
 
-  // 2. Bonus: Calculate how many sessions this specific admin has assigned
+  // Calculate how many sessions this specific admin has assigned
   const totalAssigned = await Session.countDocuments({ assignedBy: adminId });
 
   // 3. Format the response to fulfill your exact requirements

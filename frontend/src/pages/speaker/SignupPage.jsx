@@ -121,10 +121,15 @@ const SignupPage = () => {
   }, [step, resendTimer]);
 
   // Redirect if already logged in
-  if (isAuthenticated) {
-      setTimeout(() => navigate("/dashboard"), 1000);
-      return null;
-  }
+  useEffect(() => {
+    let timeout;
+    if (isAuthenticated) {
+      timeout = setTimeout(() => navigate("/dashboard"), 1000);
+    }
+    return () => clearTimeout(timeout);
+  }, [isAuthenticated, navigate]);
+
+  if (isAuthenticated) return null;
 
   return (
     <div className="min-h-screen w-full flex bg-[#FDFCF8] overflow-hidden">

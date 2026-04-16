@@ -31,13 +31,7 @@ const ListenerProfile = () => {
       try {
         
         const res = await axiosInstance.get(API_PATHS.LISTENER.DASHBOARD);
-        const { user, availability, profile } = res.data; // Adjust based on your actual response structure
-        
-        // Use the 'profile' object if your backend sends it separately, 
-        // otherwise check where 'bio' and 'preferredDays' live in your response.
-        // Based on previous code, it might be in 'overview' or root.
-        // Let's assume the backend sends `profile: { bio, preferredDays }` inside dashboard response
-        // OR we fetch from a dedicated /profile endpoint if you made one.
+        const { user, availability, profile } = res.data; 
         
         // Fallback if data is structured differently:
         const bioData = res.data.profile?.bio || res.data.bio || "";
@@ -87,7 +81,7 @@ const ListenerProfile = () => {
   // 4️⃣ Handle Logout
   const handleLogout = () => {
     logout(); 
-    navigate("/login");
+
     toast.success("Logged out successfully");
   };
 
