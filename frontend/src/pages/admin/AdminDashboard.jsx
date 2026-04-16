@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Calendar, Clock, Users, ArrowRight, X, AlertTriangle, 
   CheckCircle2, Search, ArrowLeft, Loader2, ShieldCheck, 
@@ -7,9 +8,10 @@ import {
 } from 'lucide-react';
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   // --- STATE: PENDING SESSIONS ---
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +169,7 @@ const AdminDashboard = () => {
   };
 
   if (loading) {
-    return <SolanceLoader/>
+    return <VozranowLoader/>
   }
 
   return (
@@ -185,7 +187,17 @@ const AdminDashboard = () => {
               <p className="text-[#5C5954] mt-1">Manage pending requests and track your assignments.</p>
             </div>
           </div>
-
+          <button 
+              onClick={() => navigate('/admin/profile')}
+              className="flex items-center gap-3 px-4 py-2 bg-white border border-[#E8E6E1] rounded-full hover:border-[#173F3A] hover:bg-[#F8FAFC] transition-all group shadow-sm shrink-0"
+            >
+              <div className="h-8 w-8 bg-[#E8F4F1] text-[#173F3A] rounded-full flex items-center justify-center">
+                <Users size={16} className="group-hover:scale-110 transition-transform" />
+              </div>
+              <span className="font-bold text-sm text-[#5C5954] group-hover:text-[#173F3A] pr-1 transition-colors">
+                Admin Profile
+              </span>
+            </button>
           {error && (
             <div className="flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 p-4 rounded-xl">
               <AlertTriangle size={18} /> {error}

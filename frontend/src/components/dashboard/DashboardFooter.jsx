@@ -29,11 +29,11 @@ export default function DashboardFooter() {
             
             {/* Email Support Button */}
             <a 
-              href="mailto:support@solance.com" 
+              href="mailto:support@Vozranow.com" 
               className="group flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#2C5F58] text-[#E5F0EE] text-sm font-medium transition-all hover:border-[#E5F0EE] hover:bg-[#1F4D45]"
             >
               <LifeBuoy size={16} className="text-[#8FAFA9] group-hover:text-[#E5F0EE]" />
-              support@solance.com
+              support@Vozranow.com
             </a>
           </div>
         </div>
@@ -43,7 +43,7 @@ export default function DashboardFooter() {
           
           {/* Branding & Copyright */}
           <div className="flex items-center gap-4">
-            <span className="font-serif text-xl font-bold tracking-tight text-white">Solance.</span>
+            <span className="font-serif text-xl font-bold tracking-tight text-white">Vozranow.</span>
             <span className="text-[#5C8983]">|</span>
             <span className="text-xs text-[#8FAFA9]">© {new Date().getFullYear()} All rights reserved.</span>
           </div>

@@ -114,7 +114,7 @@ const FeedbackPage = () => {
 
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
            <div>
-             <div className="font-serif text-3xl font-bold tracking-tight mb-2">Solance.</div>
+             <div className="font-serif text-3xl font-bold tracking-tight mb-2">Vozranow.</div>
              {/* Changed from Gray to Soft White with opacity */}
              <p className="text-[#E5F0EE]/60 text-sm uppercase tracking-widest">Session Complete</p>
            </div>
@@ -143,7 +143,7 @@ const FeedbackPage = () => {
         
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-8 left-8 font-serif text-2xl font-bold text-[#173F3A]">
-           Solance.
+           Vozranow.
         </div>
 
         <div className="w-full max-w-md space-y-8">

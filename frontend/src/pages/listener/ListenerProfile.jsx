@@ -9,7 +9,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import { useAuth } from "../../context/useAuth";
 import toast from "react-hot-toast";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader";
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -25,12 +25,11 @@ const ListenerProfile = () => {
   const [bio, setBio] = useState("");
   const [selectedDays, setSelectedDays] = useState([]);
 
-  // 1️⃣ Fetch Profile Data
+  // Fetch Profile Data
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // We reuse the dashboard endpoint or a specific profile one
-        // Assuming dashboard gives us what we need for now
+        
         const res = await axiosInstance.get(API_PATHS.LISTENER.DASHBOARD);
         const { user, availability, profile } = res.data; // Adjust based on your actual response structure
         
@@ -58,7 +57,7 @@ const ListenerProfile = () => {
     fetchProfile();
   }, []);
 
-  // 2️⃣ Handle Day Toggle
+  // Handle Day Toggle
   const toggleDay = (day) => {
     if (selectedDays.includes(day)) {
       setSelectedDays(prev => prev.filter(d => d !== day));
@@ -67,12 +66,11 @@ const ListenerProfile = () => {
     }
   };
 
-  // 3️⃣ Save Changes
+  // Save Changes
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Create a dedicated route for this: router.put('/listener/profile')
-      // If you haven't created it, use the code block above this file
+     
       await axiosInstance.put(API_PATHS.LISTENER.UPDATE_PROFILE, {
         bio,
         preferredDays: selectedDays
@@ -93,7 +91,7 @@ const ListenerProfile = () => {
     toast.success("Logged out successfully");
   };
 
-  if (loading) return <SolanceLoader/>
+  if (loading) return <VozranowLoader/>
 
   return (
     <div className="min-h-screen bg-[#FDFCF8] p-6 md:p-10 font-sans text-[#2D2A26]">

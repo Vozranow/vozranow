@@ -9,7 +9,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import ManagerSidebar from "../../components/layout/ManagerSidebar";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader";
 const ManagerFinancials = () => {
   // --- STATE MANAGEMENT ---
   const [data, setData] = useState(null);
@@ -92,7 +92,7 @@ const ManagerFinancials = () => {
   };
 
   if (loading && !data) return (
-    <SolanceLoader/>
+    <VozranowLoader/>
   );
 
   return (

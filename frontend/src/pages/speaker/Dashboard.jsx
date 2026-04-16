@@ -5,9 +5,14 @@ import {
   Wallet, Clock, Calendar, Star, Plus, 
   ArrowRight, History, Video, Loader2, AlertCircle, User, Search, ChevronDown 
 } from 'lucide-react';
+
+import NotificationPill from "../../components/layout/NotificationPill";
+import ActionModal from "../../components/layout/ActionModal";
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import DashboardFooter from "../../components/dashboard/DashboardFooter";
+import VozranowLoader from "../../components/layout/SolanceLoader";
+import CustomSelect from "../../components/layout/CustomSelect";
 const DashboardPage = () => {
   const navigate = useNavigate();
   
@@ -28,9 +33,7 @@ const DashboardPage = () => {
   const [sessionHasMore, setSessionHasMore] = useState(true);
   const [sessionLoadingMore, setSessionLoadingMore] = useState(false);
   const sessionScrollRef = useRef(null);
-
-  useEffect(() => {
-    const fetchDashboard = async () => {
+  const fetchDashboard = async () => {
       try {
         const res = await axiosInstance.get(API_PATHS.USER.DASHBOARD);
         setData(res.data);
@@ -55,7 +58,7 @@ const DashboardPage = () => {
         setLoading(false);
       }
     };
-
+  useEffect(() => {
     fetchDashboard();
   }, []);
 
@@ -128,12 +131,7 @@ const DashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FDFCF8]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 size={40} className="animate-spin text-[#173F3A]" />
-          <p className="text-[#5C5954] font-serif">Loading your space...</p>
-        </div>
-      </div>
+      <VozranowLoader text = "Loading your space.."/>
     );
   }
 
@@ -199,7 +197,11 @@ const DashboardPage = () => {
               {upcomingSessions.length > 0 ? (
                 <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
                   {upcomingSessions.map((session) => (
-                    <SessionCard key={session._id} session={session} />
+                    <SessionCard
+                      key={session._id}
+                      session={session}
+                      onUpdate={fetchDashboard} // <-- Pass the function here
+                    />
                   ))}
                 </div>
               ) : (
@@ -238,10 +240,14 @@ const DashboardPage = () => {
                           </div>
                           <div>{new Date(session.scheduledDate).toLocaleDateString()}</div>
                           <div>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${
-                              session.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                            }`}>
-                              {session.status}
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium capitalize
+      ${session.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                session.status === 'disputed' ? 'bg-orange-100 text-orange-700' :
+                                  session.status === 'refunded' ? 'bg-purple-100 text-purple-700' :
+                                    'bg-red-100 text-red-700'
+                              }`}
+                            >
+                              {session.status === 'disputed' ? 'Under Review' : session.status}
                             </span>
                           </div>
                           <div className="text-right pr-2">₹{session.price}</div>
@@ -291,7 +297,7 @@ const DashboardPage = () => {
                 {transactions.length > 0 ? (
                   <>
                     {transactions.map((tx) => {
-                      const isCredit = tx.type === 'TOPUP' || tx.type === 'credit'; 
+                      const isCredit = tx.type === 'TOPUP' || tx.type === 'REFUND' || tx.type === 'credit'; 
                       return (
                         <div key={tx._id} className="flex items-center justify-between text-sm p-2 hover:bg-gray-50 rounded-lg transition-colors">
                           <div className="flex items-center gap-3">
@@ -343,11 +349,226 @@ const DashboardPage = () => {
   );
 };
 
+
+
+
+// function SessionCard({ session }) {
+//   const [canJoin, setCanJoin] = useState(false);
+//   const [statusText, setStatusText] = useState("");
+//   const [checking, setChecking] = useState(false);
+//   const [cancelling, setCancelling] = useState(false);
+//   const [cancelReason, setCancelReason] = useState("");
+//   // NEW: UI State for Modal and Notifications
+//   const [isModalOpen, setIsModalOpen] = useState(false);
+//   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+  
+//   const status = session.status;
+//   const isPending = status === 'pending';
+//   const isAssigned = status === 'assigned' || status === 'ongoing';
+//   const navigate = useNavigate();
+//   const targetTime = isAssigned ? session.scheduledStartAt : (session.preferredTimeStart || session.scheduledDate);
+//   const dateObj = new Date(targetTime);
+//   const dateStr = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+//   const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+//   // Helper to trigger the notification pill
+//   const showNotification = (type, message) => {
+//     setNotification({ show: true, type, message });
+//     setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
+//   };
+
+//   useEffect(() => {
+//     if (!isAssigned) return;
+
+//     const updateCountdown = () => {
+//       const now = new Date();
+//       const start = new Date(targetTime);
+//       const lobbyOpenTime = new Date(start.getTime() - 15 * 60 * 1000); 
+      
+//       const diffMs = start - now;
+//       const hoursLeft = diffMs / (1000 * 60 * 60);
+
+//       if (now >= lobbyOpenTime) {
+//         setCanJoin(true);
+//         setStatusText("Lobby Open");
+//         return;
+//       }
+
+//       setCanJoin(false);
+//       if (hoursLeft > 24) setStatusText(`at ${timeStr}`);
+//       else if (hoursLeft > 1) setStatusText(`Opens in ${Math.ceil(hoursLeft)} hrs`);
+//       else if (hoursLeft > 0) {
+//         const minsToOpen = Math.ceil((lobbyOpenTime - now) / (1000 * 60));
+//         setStatusText(`Opens in ${minsToOpen} min`);
+//       } else if (hoursLeft < -1) setStatusText("Session Ended");
+//     };
+
+//     updateCountdown(); 
+//     const timerId = setInterval(updateCountdown, 1000); 
+
+//     const start = new Date(targetTime);
+//     const now = new Date();
+//     const hoursLeft = (start - now) / (1000 * 60 * 60);
+    
+//     let pollId;
+//     if (hoursLeft < 1 && hoursLeft > -1) {
+//       pollId = setInterval(async () => {
+//         try {
+//            await axiosInstance.get(API_PATHS.SESSION.CAN_JOIN(session._id));
+//         } catch(e) { /* silent fail */ }
+//       }, 5 * 60 * 1000);
+//     }
+
+//     return () => {
+//       clearInterval(timerId);
+//       if(pollId) clearInterval(pollId);
+//     };
+
+//   }, [targetTime, isAssigned, timeStr, session._id]);
+
+//   const handleJoin = async () => {
+//     if (!canJoin) return;
+//     setChecking(true);
+//     try {
+//       const res = await axiosInstance.get(API_PATHS.SESSION.CAN_JOIN(session._id));
+//       if (res.data.allowed) {
+//         navigate(`/session/${session._id}/lobby`);
+//       }
+//     } catch (err) {
+//       console.log(err);
+//       showNotification('error', err.response?.data?.message || "Cannot join right now");
+//     } finally {
+//       setChecking(false);
+//     }
+//   };
+
+//   // Triggered when user confirms inside the ActionModal
+//   const confirmCancel = async () => {
+//     setCancelling(true);
+//     try {
+//       // NEW: Pass the reason in the body
+//       const res = await axiosInstance.put(API_PATHS.SESSION.CANCEL_USER(session._id), {
+//          reason: cancelReason 
+//       });
+//       setIsModalOpen(false); 
+      
+//       showNotification('success', res.data.message || `Session cancelled. ₹${res.data.refundAmount} refunded.`);
+      
+//       setTimeout(() => {
+//          window.location.reload(); 
+//       }, 2000);
+      
+//     } catch (err) {
+//       setIsModalOpen(false); 
+//       showNotification('error', err.response?.data?.message || "Failed to cancel session.");
+//       setCancelling(false); 
+//     }
+//   };
+
+//   let icon = <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center"><Calendar size={20}/></div>;
+//   if(isPending) icon = <div className="h-12 w-12 rounded-full bg-orange-50 text-orange-600 flex items-center justify-center font-bold"><Search size={20} /></div>;
+//   if(isAssigned) icon = <div className="h-12 w-12 rounded-full bg-[#E8F4F1] text-[#3A6B48] flex items-center justify-center text-lg font-bold">{session.listenerId?.username?.charAt(0).toUpperCase()}</div>;
+
+//   return (
+//     <>
+//       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-gray-100 gap-4 transition-colors hover:border-[#173F3A]/20">
+//         <div className="flex items-center gap-4">
+//           {icon}
+//           <div>
+//             <h4 className="font-medium text-[#2D2A26]">
+//               {isPending ? "Looking for a listener..." : `Session with ${session.listenerId?.username}`}
+//             </h4>
+//             <p className="text-sm text-[#5C5954] mt-0.5">
+//               {isPending ? (
+//                 <span className="text-orange-600/80">Requested for {dateStr}. Notify when assigned.</span>
+//               ) : (
+//                 <span className="flex items-center gap-1.5"><Calendar size={14}/> {dateStr} • {statusText}</span>
+//               )}
+//             </p>
+//           </div>
+//         </div>
+
+//         <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2 mt-2 sm:mt-0">
+          
+//           {/* Cancel Button: Only visible if Assigned and Lobby is NOT open */}
+//           {isAssigned && !canJoin && (
+//             <button 
+//               onClick={() => setIsModalOpen(true)} // Opens the new Modal
+//               disabled={cancelling}
+//               className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+//             >
+//               {cancelling ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
+//             </button>
+//           )}
+
+//           <button 
+//             onClick={handleJoin}
+//             disabled={isPending || (!canJoin && isAssigned)}
+//             className={`w-full sm:w-auto px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+//               canJoin 
+//                 ? "bg-[#173F3A] text-white hover:bg-[#0F2926] shadow-md shadow-[#173F3A]/10 scale-100" 
+//                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
+//             }`}
+//           >
+//             {checking ? <Loader2 size={16} className="animate-spin" /> : (
+//                isPending ? "Waiting..." : (canJoin ? <><Video size={16} /> Join Lobby</> : "Lobby Closed")
+//             )}
+//           </button>
+//         </div>
+//       </div>
+
+//       {/* --- RENDER THE NEW COMPONENTS --- */}
+//       <NotificationPill notification={notification} />
+      
+//       <ActionModal 
+//         isOpen={isModalOpen}
+//         onClose={() => setIsModalOpen(false)}
+//         onConfirm={confirmCancel}
+//         isProcessing={cancelling}
+//         title="Cancel Session"
+//         subtitle={`${dateStr} at ${timeStr}`}
+//         description="Are you sure you want to cancel this session? If you cancel within 24 hours of the start time, a 50% partial refund will be issued. Cancellations made further in advance receive a full refund."
+//         icon={AlertCircle}
+//         confirmText="Yes, Cancel"
+//         confirmColor="bg-red-600 hover:bg-red-700"
+//         iconColor="bg-red-50 text-red-600"
+//       >
+//         {/* NEW: Custom text area injected into the modal */}
+//         <div className="mb-4">
+//            <label className="block text-sm font-medium text-[#2D2A26] mb-2">
+//              Reason for cancellation (optional)
+//            </label>
+//            <textarea 
+//              value={cancelReason}
+//              onChange={(e) => setCancelReason(e.target.value)}
+//              placeholder="Please let us know why you need to cancel..."
+//              className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 resize-none text-sm text-[#2D2A26]"
+//              rows="3"
+//              disabled={cancelling}
+//            />
+//         </div>
+//       </ActionModal>
+//     </>
+//   );
+// }
 // --- SESSION CARD ---
-function SessionCard({ session }) {
+function SessionCard({ session , onUpdate}) {
   const [canJoin, setCanJoin] = useState(false);
   const [statusText, setStatusText] = useState("");
   const [checking, setChecking] = useState(false);
+  
+  // Cancel State
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // NEW: Report Issue State
+  const [reporting, setReporting] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("Listener No-Show");
+  const [reportDetails, setReportDetails] = useState("");
+
+  const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   
   const status = session.status;
   const isPending = status === 'pending';
@@ -357,6 +578,11 @@ function SessionCard({ session }) {
   const dateObj = new Date(targetTime);
   const dateStr = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   const timeStr = dateObj.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  const showNotification = (type, message) => {
+    setNotification({ show: true, type, message });
+    setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
+  };
 
   useEffect(() => {
     if (!isAssigned) return;
@@ -369,6 +595,7 @@ function SessionCard({ session }) {
       const diffMs = start - now;
       const hoursLeft = diffMs / (1000 * 60 * 60);
 
+      // THE FLIP: At T-15 mins, lobby opens and Cancel button becomes Report button
       if (now >= lobbyOpenTime) {
         setCanJoin(true);
         setStatusText("Lobby Open");
@@ -416,10 +643,50 @@ function SessionCard({ session }) {
         navigate(`/session/${session._id}/lobby`);
       }
     } catch (err) {
-      console.log(err)
-      alert(err.response?.data?.message || "Cannot join right now");
+      console.log(err);
+      showNotification('error', err.response?.data?.message || "Cannot join right now");
     } finally {
       setChecking(false);
+    }
+  };
+
+  const confirmCancel = async () => {
+    setCancelling(true);
+    try {
+      const res = await axiosInstance.put(API_PATHS.SESSION.CANCEL_USER(session._id), {
+         reason: cancelReason 
+      });
+      setIsModalOpen(false); 
+      showNotification('success', res.data.message || `Session cancelled. ₹${res.data.refundAmount} refunded.`);
+      setTimeout(() => {
+        if (onUpdate) onUpdate();
+      }, 2000);
+    } catch (err) {
+      setIsModalOpen(false); 
+      showNotification('error', err.response?.data?.message || "Failed to cancel session.");
+      setCancelling(false); 
+    }
+  };
+
+  // NEW: Report Issue Handler
+  const confirmReport = async () => {
+    setReporting(true);
+    try {
+      const res = await axiosInstance.put(API_PATHS.SESSION.REPORT_ISSUE(session._id), {
+         reason: reportReason,
+         details: reportDetails
+      });
+      setIsReportModalOpen(false); 
+      showNotification('success', res.data.message);
+      
+      
+      setTimeout(() => {
+        if (onUpdate) onUpdate();
+      }, 2000);
+    } catch (err) {
+      // NOTE: We don't close the modal on error, so they can read the 10-minute warning
+      showNotification('error', err.response?.data?.message || "Failed to report issue.");
+      setReporting(false); 
     }
   };
 
@@ -428,40 +695,139 @@ function SessionCard({ session }) {
   if(isAssigned) icon = <div className="h-12 w-12 rounded-full bg-[#E8F4F1] text-[#3A6B48] flex items-center justify-center text-lg font-bold">{session.listenerId?.username?.charAt(0).toUpperCase()}</div>;
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-gray-100 gap-4 transition-colors hover:border-[#173F3A]/20">
-      <div className="flex items-center gap-4">
-        {icon}
-        <div>
-          <h4 className="font-medium text-[#2D2A26]">
-            {isPending ? "Looking for a listener..." : `Session with ${session.listenerId?.username}`}
-          </h4>
-          <p className="text-sm text-[#5C5954] mt-0.5">
-            {isPending ? (
-              <span className="text-orange-600/80">Requested for {dateStr}. Notify when assigned.</span>
-            ) : (
-              <span className="flex items-center gap-1.5"><Calendar size={14}/> {dateStr} • {statusText}</span>
+    <>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#F8FAFC] rounded-xl border border-gray-100 gap-4 transition-colors hover:border-[#173F3A]/20">
+        <div className="flex items-center gap-4">
+          {icon}
+          <div>
+            <h4 className="font-medium text-[#2D2A26]">
+              {isPending ? "Looking for a listener..." : `Session with ${session.listenerId?.username}`}
+            </h4>
+            <p className="text-sm text-[#5C5954] mt-0.5">
+              {isPending ? (
+                <span className="text-orange-600/80">Requested for {dateStr}. Notify when assigned.</span>
+              ) : (
+                <span className="flex items-center gap-1.5"><Calendar size={14}/> {dateStr} • {statusText}</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row items-center gap-2 mt-2 sm:mt-0">
+          
+          {/* STATE 1: Before Lobby Opens -> Show CANCEL */}
+          {isAssigned && !canJoin && (
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              disabled={cancelling}
+              className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {cancelling ? <Loader2 size={16} className="animate-spin" /> : "Cancel"}
+            </button>
+          )}
+
+          {/* STATE 2: After Lobby Opens -> Show REPORT ISSUE */}
+          {isAssigned && canJoin && (
+            <button 
+              onClick={() => setIsReportModalOpen(true)}
+              disabled={reporting}
+              className="w-full sm:w-auto px-4 py-2 rounded-lg text-sm font-medium border border-orange-200 text-orange-600 bg-white hover:bg-orange-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {reporting ? <Loader2 size={16} className="animate-spin" /> : "Report Issue"}
+            </button>
+          )}
+
+          {/* Join Lobby Button */}
+          <button 
+            onClick={handleJoin}
+            disabled={isPending || (!canJoin && isAssigned)}
+            className={`w-full sm:w-auto px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+              canJoin 
+                ? "bg-[#173F3A] text-white hover:bg-[#0F2926] shadow-md shadow-[#173F3A]/10 scale-100" 
+                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            {checking ? <Loader2 size={16} className="animate-spin" /> : (
+               isPending ? "Waiting..." : (canJoin ? <><Video size={16} /> Join Lobby</> : "Lobby Closed")
             )}
-          </p>
+          </button>
         </div>
       </div>
 
-      <button 
-        onClick={handleJoin}
-        disabled={isPending || (!canJoin && isAssigned)}
-        className={`w-full sm:w-auto px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
-          canJoin 
-            ? "bg-[#173F3A] text-white hover:bg-[#0F2926] shadow-md shadow-[#173F3A]/10 scale-100" 
-            : "bg-gray-100 text-gray-400 cursor-not-allowed"
-        }`}
+      <NotificationPill notification={notification} />
+      
+      {/* CANCEL MODAL */}
+      <ActionModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={confirmCancel}
+        isProcessing={cancelling}
+        title="Cancel Session"
+        subtitle={`${dateStr} at ${timeStr}`}
+        description="Are you sure you want to cancel this session? If you cancel within 24 hours of the start time, a 50% partial refund will be issued. Cancellations made further in advance receive a full refund."
+        icon={AlertCircle}
+        confirmText="Yes, Cancel"
+        confirmColor="bg-red-600 hover:bg-red-700"
+        iconColor="bg-red-50 text-red-600"
       >
-        {checking ? <Loader2 size={16} className="animate-spin" /> : (
-           isPending ? "Waiting..." : (canJoin ? <><Video size={16} /> Join Lobby</> : "Lobby Closed")
-        )}
-      </button>
-    </div>
+        <div className="mb-4">
+           <label className="block text-sm font-medium text-[#2D2A26] mb-2">Reason for cancellation (optional)</label>
+           <textarea 
+             value={cancelReason}
+             onChange={(e) => setCancelReason(e.target.value)}
+             placeholder="Please let us know why you need to cancel..."
+             className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 resize-none text-sm text-[#2D2A26]"
+             rows="3"
+             disabled={cancelling}
+           />
+        </div>
+      </ActionModal>
+
+      {/* NEW: REPORT ISSUE MODAL */}
+      <ActionModal 
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onConfirm={confirmReport}
+        isProcessing={reporting}
+        title="Report an Issue"
+        subtitle={`Session with ${session.listenerId?.username}`}
+        description="If you are experiencing issues, let us know. Note: 'Listener No-Show' can only be reported after the 10-minute grace period has passed."
+        icon={AlertCircle}
+        confirmText="Submit Report"
+        confirmColor="bg-orange-600 hover:bg-orange-700"
+        iconColor="bg-orange-50 text-orange-600"
+      >
+        <div className="space-y-4 mb-4 text-left">
+           <div>
+              <label className="block text-sm font-medium text-[#2D2A26] mb-1.5">Issue Type</label>
+              <CustomSelect 
+                value={reportReason}
+                onChange={setReportReason}
+                disabled={reporting}
+                options={[
+                  "Listener No-Show",
+                  "Technical Glitch",
+                  "Inappropriate Behavior",
+                  "Other"
+                ]}
+              />
+           </div>
+           <div>
+              <label className="block text-sm font-medium text-[#2D2A26] mb-1">Details (Optional)</label>
+              <textarea 
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Please provide more context..."
+                className="w-full p-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 resize-none text-sm text-[#2D2A26]"
+                rows="3"
+                disabled={reporting}
+              />
+           </div>
+        </div>
+      </ActionModal>
+    </>
   );
 }
-
 // --- SUBCOMPONENTS ---
 
 function StatCard({ icon: Icon, label, value, color }) {

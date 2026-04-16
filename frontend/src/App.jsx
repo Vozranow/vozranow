@@ -24,6 +24,8 @@ import ManagerFinancials from './pages/manager/ManagerFinancials.jsx'
 import ListenerDirectory from './pages/manager/ListenerDirect.jsx'
 import ManagerSessionLogs from './pages/manager/ManagerSessionLogs.jsx'
 import ManagerAssignSession from './pages/manager/ManagerAssignSession.jsx'
+import ManagerDisputes from './pages/manager/ManagerDisputes.jsx'
+import ManagerDirectory from './pages/manager/ManagerDirectory.jsx'
 
 function App() {
   console.log(ENV.BACKEND_URL);
@@ -63,14 +65,12 @@ function App() {
       <Route element={<ProtectedRoute allowedRoles={['user', 'listener']} />}>
         <Route path="/session/:sessionId/lobby" element={<LobbyPage />} />
       </Route>
-
+          {/* admin */}
         <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/profile" element={<AdminProfilePage />}/>
         </Route>
-
-        {/* manager route */}
-
+        {/* manager */}
         <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
           <Route path="/manager/dashboard" element={<ManagerDashboard />} />
           <Route path="/manager/financials" element={<ManagerFinancials />} />
@@ -78,6 +78,8 @@ function App() {
           
           <Route path="/manager/sessions" element={<ManagerSessionLogs />} />
           <Route path="/manager/assign" element={<ManagerAssignSession />} />
+          <Route path="/manager/disputes" element={<ManagerDisputes />} />
+          <Route path="/manager/directory" element={<ManagerDirectory />} />
         </Route>
 
     </Routes>

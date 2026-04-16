@@ -46,6 +46,7 @@ router.post("/forgot-pass",otpResendLimiter("register"),rateLimiter({
 router.post("/reset-pass",resetPassword);
 router.post("/logout",logoutUser);
 router.put("/update-prof",protect,updateProfile);
+
 router.post(
   "/verify-email-change",
   protect,

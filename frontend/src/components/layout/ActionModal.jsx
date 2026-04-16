@@ -11,7 +11,8 @@ const ActionModal = ({
   confirmText = "Confirm", 
   confirmColor = "bg-[#173F3A] hover:bg-[#112F2A]", 
   iconColor = "bg-[#E8F4F1] text-[#173F3A]",
-  isProcessing = false
+  isProcessing = false,
+  children // <-- 1. ADDED THIS PROP
 }) => {
   if (!isOpen) return null;
 
@@ -35,11 +36,14 @@ const ActionModal = ({
           </button>
         </div>
         
-        <p className="text-[#5C5954] text-sm leading-relaxed mb-8">
+        <p className="text-[#5C5954] text-sm leading-relaxed mb-6">
           {description}
         </p>
         
-        <div className="flex justify-end gap-3">
+        {/* 2. ADDED CHILDREN HERE */}
+        {children}
+        
+        <div className="flex justify-end gap-3 mt-2">
           <button
             onClick={onClose}
             disabled={isProcessing}

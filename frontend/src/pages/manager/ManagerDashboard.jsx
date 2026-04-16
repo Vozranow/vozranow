@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect } from "react";
 import { 
-  LayoutDashboard, Users, ShieldAlert, 
-  LogOut, DollarSign, Headphones, Target, CheckCircle,
-  Activity, CreditCard, Menu, FileText, TrendingUp, TrendingDown
+   Users,  
+   DollarSign, Headphones, Target, CheckCircle,
+   Menu,  TrendingUp, TrendingDown
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
 import { 
   PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid

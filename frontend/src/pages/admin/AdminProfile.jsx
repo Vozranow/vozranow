@@ -8,7 +8,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import { useAuth } from "../../context/useAuth";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader";
 
 const AdminProfilePage = () => {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const AdminProfilePage = () => {
   };
 
   if (loading) {
-    return <SolanceLoader/>
+    return <VozranowLoader/>
   }
 
   if (error) {

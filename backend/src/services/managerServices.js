@@ -2,6 +2,9 @@ import Session from '../models/session.js';
 import User from '../models/users.js';
 import mongoose from 'mongoose';
 import ListenerProfile from '../models/listenerProfile.js';
+import WalletTransaction from '../models/walletTransaction.js';
+import redis from '../lib/redis.js';
+import { emailQueue } from '../queues/emailQueue.js';
 export const getDashboardMetrics = async () => {
   try {
     const now = new Date();
@@ -23,8 +26,8 @@ export const getDashboardMetrics = async () => {
                   _id: null,
                   count: { $sum: 1 },
                   // Fallback to 20% of price if platformFee is missing on older sessions
-                  solanceRevenue: { $sum: { $ifNull: ["$platformFee", { $multiply: ["$price", 0.20] }] } },
-                  // Collect unique IDs to count ACTIVE users/listeners
+                  VozranowRevenue: { $sum: { $ifNull: ["$platformFee", { $multiply: ["$price", 0.80] }] } },
+                  
                   uniqueUsers: { $addToSet: "$userId" },
                   uniqueListeners: { $addToSet: "$listenerId" }
               }}
@@ -34,7 +37,7 @@ export const getDashboardMetrics = async () => {
               { $group: {
                   _id: null,
                   count: { $sum: 1 },
-                  solanceRevenue: { $sum: { $ifNull: ["$platformFee", { $multiply: ["$price", 0.20] }] } },
+                  VozranowRevenue: { $sum: { $ifNull: ["$platformFee", { $multiply: ["$price", 0.80] }] } },
                   uniqueUsers: { $addToSet: "$userId" },
                   uniqueListeners: { $addToSet: "$listenerId" }
               }}
@@ -42,8 +45,8 @@ export const getDashboardMetrics = async () => {
             "sixMonthTrend": [
               { $group: {
                   _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
-                  revenue: { $sum: { $ifNull: ["$platformFee", { $multiply: ["$price", 0.20] }] } },
-                  payouts: { $sum: { $ifNull: ["$listenerPayout", { $multiply: ["$price", 0.80] }] } }
+                  revenue: { $sum: { $ifNull: ["$platformFee", { $multiply: ["$price", 0.80] }] } },
+                  payouts: { $sum: { $ifNull: ["$listenerPayout", { $multiply: ["$price", 0.20] }] } }
               }},
               { $sort: { "_id.year": 1, "_id.month": 1 } }
             ]
@@ -67,11 +70,11 @@ export const getDashboardMetrics = async () => {
     // --- DATA EXTRACTION & FALLBACKS ---
     const stats = mainStats[0];
 
-    const thisMonthData = stats.thisMonth[0] || { count: 0, solanceRevenue: 0, uniqueUsers: [], uniqueListeners: [] };
-    const lastMonthData = stats.lastMonth[0] || { count: 0, solanceRevenue: 0, uniqueUsers: [], uniqueListeners: [] };
+    const thisMonthData = stats.thisMonth[0] || { count: 0, VozranowRevenue: 0, uniqueUsers: [], uniqueListeners: [] };
+    const lastMonthData = stats.lastMonth[0] || { count: 0, VozranowRevenue: 0, uniqueUsers: [], uniqueListeners: [] };
 
-    const thisMonthRev = thisMonthData.solanceRevenue || 0;
-    const lastMonthRev = lastMonthData.solanceRevenue || 0;
+    const thisMonthRev = thisMonthData.VozranowRevenue || 0;
+    const lastMonthRev = lastMonthData.VozranowRevenue || 0;
     
     const thisMonthSessions = thisMonthData.count || 0;
     const lastMonthSessions = lastMonthData.count || 0;
@@ -398,24 +401,24 @@ export const getListenerDirectory = async (page = 1, limit = 10) => {
   }
 };
 
-export const banListenerAccount = async (listenerId) => {
-  try {
-    // 1. Flip the ban switch
-    const user = await User.findByIdAndUpdate(listenerId, { isBanned: true }, { new: true });
-    if (!user) return { success: false, statusCode: 404, message: "Listener not found" };
+// export const banListenerAccount = async (listenerId) => {
+//   try {
+//     // 1. Flip the ban switch
+//     const user = await User.findByIdAndUpdate(listenerId, { isBanned: true }, { new: true });
+//     if (!user) return { success: false, statusCode: 404, message: "Listener not found" };
 
-    // 2. Force them offline in their profile so they immediately disappear from the client app
-    await ListenerProfile.findOneAndUpdate({ userId: listenerId }, { isOnline: false });
+//     // 2. Force them offline in their profile so they immediately disappear from the client app
+//     await ListenerProfile.findOneAndUpdate({ userId: listenerId }, { isOnline: false });
 
-    // (Optional Future Step): You could also add logic here to automatically refund any 
-    // "pending" future sessions they haven't completed yet.
+//     // (Optional Future Step): You could also add logic here to automatically refund any 
+//     // "pending" future sessions they haven't completed yet.
 
-    return { success: true, statusCode: 200, message: "Listener has been permanently banned and forced offline." };
-  } catch (error) {
-    console.error("Ban Listener Error:", error);
-    throw error;
-  }
-};
+//     return { success: true, statusCode: 200, message: "Listener has been permanently banned and forced offline." };
+//   } catch (error) {
+//     console.error("Ban Listener Error:", error);
+//     throw error;
+//   }
+// };
 
 
 
@@ -507,5 +510,275 @@ export const getEscalatedSessionsService = async () => {
   } catch (error) {
     console.error("Fetch Escalated Error:", error);
     throw error; // Throw it so the controller can catch it
+  }
+};
+
+
+export const getDisputedSessionsService = async (page = 1, limit = 10) => {
+  try {
+    const skip = (page - 1) * limit;
+    const query = { status: 'disputed' };
+
+    const disputes = await Session.find(query)
+      .populate('userId', 'username email')
+      .populate('listenerId', 'username email')
+      .sort({ 'dispute.reportedAt': -1 }) // Oldest first
+      .skip(skip)
+      .limit(limit)
+      .lean(); // Faster query execution
+
+    const totalDisputes = await Session.countDocuments(query);
+
+    return {
+      success: true,
+      statusCode: 200,
+      data: {
+        disputes,
+        pagination: {
+          totalDisputes,
+          totalPages: Math.ceil(totalDisputes / limit),
+          currentPage: page
+        }
+      }
+    };
+  } catch (error) {
+    console.error("Get Disputed Sessions Error:", error);
+    throw error;
+  }
+};
+
+
+
+export const resolveDisputeService = async (sessionId, action, managerNote, managerId) => {
+  const dbSession = await mongoose.startSession();
+  dbSession.startTransaction();
+
+  try {
+    if (!["approve", "reject"].includes(action)) {
+      return { success: false, statusCode: 400, message: "Invalid action. Must be 'approve' or 'reject'." };
+    }
+
+    const session = await Session.findById(sessionId)
+      .populate('userId', 'username email') 
+      .session(dbSession);
+
+    if (!session || session.status !== "disputed") {
+      return { success: false, statusCode: 400, message: "Session is not currently disputed." };
+    }
+
+    // 1. Log the manager's note
+    session.dispute.managerNote = managerNote || "Resolved by management.";
+
+  
+    // --- SCENARIO A: MANAGER APPROVES (REFUND USER) ---
+    if (action === "approve") {
+      const refundAmount = session.price;
+
+      // 1. Refund the User's Wallet
+      const updatedUser = await User.findByIdAndUpdate(
+        session.userId, 
+        { $inc: { walletBalance: refundAmount } },
+        { session: dbSession, new: true } 
+      );
+
+      // 2. Log the User's Wallet Transaction
+      await WalletTransaction.create([{
+        userId: session.userId,
+        amount: refundAmount,
+        type: "REFUND",
+        balanceAfter: updatedUser.walletBalance,
+        status: "success",
+        description: `Refund for disputed session with ${session.listenerId || 'listener'}.`,
+        referenceId: session._id.toString()
+      }], { session: dbSession });
+
+      // 🟢 3. NEW: PENALIZE LISTENER (The 0-Star Hammer)
+      if (session.listenerId) {
+        const profile = await ListenerProfile.findOne({ userId: session.listenerId }).session(dbSession);
+        
+        if (profile) {
+          // The Math: ((Old Average * Old Count) + 0) / (Old Count + 1)
+          const currentCount = profile.rating?.count || 0;
+          const currentAvg = profile.rating?.average || 0;
+          const currentTotalStars = currentAvg * currentCount;
+          
+          const newCount = currentCount + 1;
+          const newAverage = (currentTotalStars + 1) / newCount;
+
+          profile.rating = {
+            average: newAverage,
+            count: newCount
+          };
+          
+          await profile.save({ session: dbSession });
+        }
+      }
+
+      // 4. Update Session State
+      session.status = "refunded";
+      session.refund = {
+        percentage: 100,
+        amount: refundAmount,
+        processedAt: new Date()
+      };
+      
+      // Save the 0-star review into the session for the audit trail
+      session.review = {
+        rating: 1,
+        comment: `System Penalty: Client dispute approved by Manager. Note: ${managerNote}`
+      };
+      
+      session.timeline.push({
+        status: "refunded",
+        time: new Date(),
+        note: `Manager approved refund: ${managerNote}. 0-Star penalty applied to listener.`
+      });
+      
+     
+    }
+    
+    // --- SCENARIO B: MANAGER REJECTS (LISTENER GETS PAID) ---
+    else if (action === "reject") {
+      
+      // 1. Update Session Status to trigger the Manager Payout Queue
+      session.status = "completed"; 
+      session.payoutStatus = "pending"; // 
+      
+      // 2. Ensure we have the exact earnings amount (Fallback to 20% for the new split if missing)
+      const earningsToAdd = session.listenerPayout !== undefined 
+        ? session.listenerPayout 
+        : (session.price * 0.20);
+
+      // 3. Update Listener Profile Stats (Matches completeSession logic perfectly)
+      await ListenerProfile.findOneAndUpdate(
+        { userId: session.listenerId },
+        { 
+          $inc: { 
+            totalSessionsCompleted: 1,
+            totalEarnings: earningsToAdd
+          } 
+        },
+        { session: dbSession }
+      );
+
+      session.timeline.push({
+        status: "completed",
+        time: new Date(),
+        note: `Manager rejected dispute: ${managerNote}. Session completed & payout queued.`
+      });
+      
+      if (session.userId && session.userId.email) {
+        await emailQueue.add('send-email', {
+          type: 'DISPUTE_REJECTED_USER',
+          to: session.userId.email,
+          sub: 'Update on your Vozranow Session Dispute',
+          payload: { 
+            username: session.userId.username || "User", 
+            managerNote: managerNote || "Resolved by management." 
+          }
+        });
+      }
+    }
+
+    await session.save({ session: dbSession });
+    await dbSession.commitTransaction();
+
+    // Clear Caches so dashboards update instantly
+    if (typeof redis !== 'undefined' && redis.status === 'ready') {
+      await redis.del(`user:${session.userId}`);
+      await redis.del(`dashboard:${session.userId}`);
+      if (session.listenerId) {
+         await redis.del(`dashboard:listener:${session.listenerId}`);
+      }
+    }
+
+    return {
+      success: true,
+      statusCode: 200,
+      message: `Dispute successfully ${action}ed.`,
+      data: session
+    };
+
+  } catch (error) {
+    await dbSession.abortTransaction();
+    console.error("Resolve Dispute Service Error:", error);
+    throw error;
+  } finally {
+    dbSession.endSession();
+  }
+};
+
+
+
+
+export const createPlatformAccountService = async (accountData) => {
+  const { username, email, password, role, tags, preferredDays } = accountData;
+
+  // 1. Strict Validation
+  if (!['admin', 'listener'].includes(role)) {
+    return { success: false, statusCode: 400, message: "Invalid role. Must be 'admin' or 'listener'." };
+  }
+
+  if (!username || !email || !password) {
+    return { success: false, statusCode: 400, message: "Username, email, and password are required." };
+  }
+
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return { success: false, statusCode: 400, message: "An account with this email already exists." };
+  }
+
+  const dbSession = await mongoose.startSession();
+  dbSession.startTransaction();
+
+  try {
+    // 2. Create the User Document
+    const newUser = new User({
+      username,
+      email,
+      password, 
+      role,
+      emailVerified: true, 
+      walletBalance: 0       
+    });
+
+    await newUser.save({ session: dbSession });
+
+    // 3. Create Listener Profile (If applicable)
+    if (role === 'listener') {
+      const profile = new ListenerProfile({
+        userId: newUser._id,
+        bio: "Hi, I am a new listener on Vozranow. I am here to support you.",
+        tags: tags || ["General Support"],
+        preferredDays: preferredDays || ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        isOnline: false, 
+        totalSessionsCompleted: 0,
+        totalEarnings: 0
+      });
+      await profile.save({ session: dbSession });
+    }
+
+    await dbSession.commitTransaction();
+
+    
+
+    return {
+      success: true,
+      statusCode: 201,
+      message: `Successfully created new ${role} account for ${username}.`,
+      data: {
+        _id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role
+      }
+    };
+
+  } catch (error) {
+    await dbSession.abortTransaction();
+    console.error("Create Platform Account Error:", error);
+    throw error;
+  } finally {
+    dbSession.endSession();
   }
 };

@@ -88,7 +88,7 @@ const LoginPage = () => {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
-           <div className="font-serif text-3xl font-bold tracking-tight">Solance.</div>
+           <div className="font-serif text-3xl font-bold tracking-tight">Vozranow.</div>
            
            <div className="space-y-6 max-w-md">
               <blockquote className="font-serif text-4xl leading-tight">
@@ -100,7 +100,7 @@ const LoginPage = () => {
            </div>
 
            <div className="text-sm opacity-60">
-              © 2024 Solance. All rights reserved.
+              © 2026 Vozranow. All rights reserved.
            </div>
         </div>
       </div>
@@ -110,7 +110,7 @@ const LoginPage = () => {
         
         {/* Mobile Logo (Only shows on small screens) */}
         <div className="lg:hidden absolute top-8 left-8 font-serif text-2xl font-bold text-[#173F3A]">
-           Solance.
+           Vozranow.
         </div>
 
         <div className="w-full max-w-md space-y-8">

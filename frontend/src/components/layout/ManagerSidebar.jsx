@@ -1,19 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
-  LayoutDashboard, Users, ShieldAlert, LogOut, Headphones, Activity, CreditCard 
+  LayoutDashboard, ShieldAlert, LogOut, Headphones, Activity, CreditCard , AlertCircle,Users
 } from "lucide-react";
 import { useAuth } from "../../context/useAuth"; 
 
 const ManagerSidebar = ({ isSidebarOpen }) => {
   const location = useLocation(); // 🟢 Automatically gets the current URL path
   const currentPath = location.pathname;
-  const { logout } = useAuth(); // Hook up your real logout function
+  const { logout } = useAuth(); 
 
   return (
     <aside className={`bg-[#173F3A] text-white transition-all duration-300 flex flex-col z-20 shrink-0 ${isSidebarOpen ? 'w-64' : 'w-20'}`}>
       <div className="h-24 flex items-center px-6 border-b border-white/10 shrink-0">
         <Activity size={24} className="text-[#E8F4F1] mr-3 shrink-0" />
-        {isSidebarOpen && <span className="font-serif font-bold text-xl tracking-widest">SOLANCE</span>}
+        {isSidebarOpen && <span className="font-serif font-bold text-xl tracking-widest">Vozranow</span>}
       </div>
       
       <nav className="flex-1 overflow-y-auto py-8 px-4 space-y-2">
@@ -64,14 +64,22 @@ const ManagerSidebar = ({ isSidebarOpen }) => {
               isOpen={isSidebarOpen} 
             />
           </Link>
-          <Link to="/manager/logs" className="block">
-            <SidebarItem 
-              icon={<ShieldAlert size={20}/>} 
-              label="Admin Logs" 
-              active={currentPath === '/manager/logs'} 
-              isOpen={isSidebarOpen} 
-            />
-          </Link>
+        <Link to="/manager/disputes" className="block">
+          <SidebarItem
+            icon={<AlertCircle size={20} />}
+            label="Active Disputes"
+            active={currentPath === '/manager/disputes'}
+            isOpen={isSidebarOpen}
+          />
+        </Link>
+        <Link to="/manager/directory" className="block">
+          <SidebarItem
+            icon={<Users size={20} />}
+            label="Staff Directory"
+            active={currentPath === '/manager/directory'}
+            isOpen={isSidebarOpen}
+          />
+        </Link>
       </nav>
 
       <div className="p-4 border-t border-white/10">

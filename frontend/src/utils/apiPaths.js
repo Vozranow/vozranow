@@ -50,10 +50,13 @@ const API_PATHS = {
     // Directory Management
     GET_LISTENERS: "/api/manager/directory/listeners",
     BAN_LISTENER: (listenerId) => `/api/manager/directory/listeners/${listenerId}/ban`,
+    ADD_STAFF: "/api/manager/add-staff",
     
     
     GET_SESSION_LOGS: "/api/manager/sessions",
     GET_ESCALATED: "/api/manager/escalated",
+    GET_DISPUTES: "/api/manager/disputes",
+    RESOLVE_DISPUTE: (sessionId) => `/api/manager/disputes/${sessionId}/resolve`,
   },
 
 
@@ -62,7 +65,9 @@ const API_PATHS = {
     CAN_JOIN: (sessionId) => `/api/session/canJoin/${sessionId}`, // Lobby check
     HISTORY: "/api/session/history", // Past sessions
     GET_MESSAGES: (sessionId) => `/api/session/${sessionId}/messages`,
-    COMPLETE : "/api/session/complete"
+    COMPLETE : "/api/session/complete",
+    CANCEL_USER: (sessionId) => `/api/session/${sessionId}/cancel`,
+    REPORT_ISSUE: (sessionId) => `/api/session/${sessionId}/report-issue`
   },
 
   

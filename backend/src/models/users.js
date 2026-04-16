@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema(
       enum: ["anonymous", "identified"],
       default: "anonymous",
     },
+    hasUsedFreeTrial: {
+      type: Boolean,
+      default: false
+    },
 
     // Wallet
     walletBalance: {
@@ -84,6 +88,7 @@ const userSchema = new mongoose.Schema(
       type: Date,
     },
   },
+  
   { timestamps: true }
 );
 

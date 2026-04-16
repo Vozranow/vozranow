@@ -8,7 +8,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import toast from "react-hot-toast";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader";
 
 const ListenerDashboard = () => {
   const navigate = useNavigate();
@@ -133,7 +133,7 @@ const ListenerDashboard = () => {
     }
   };
 
-  if (loading) return <SolanceLoader/>
+  if (loading) return <VozranowLoader/>
 
   const { user, overview, monthlyEarnings } = data;
 
@@ -166,7 +166,7 @@ const ListenerDashboard = () => {
                 <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-300 ${isOnline ? 'translate-x-5' : 'translate-x-0'}`} />
              </button>
              <button onClick={()=> navigate("/listener/profile")} className="bg-[#173F3A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0F2926] transition-colors">
-                Update Availability
+                Profile
              </button>
           </div>
         </div>
@@ -392,14 +392,30 @@ const ListenerSessionCard = ({ session, isHistory }) => {
           {isHistory ? (
              /* HISTORY VIEW: Stars ⭐️ */
              <div className="flex items-center justify-center sm:justify-end gap-1">
-               {[1, 2, 3, 4, 5].map((star) => (
-                 <Star 
-                   key={star} 
-                   size={16} 
-                   className={`${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-100 text-gray-200'}`} 
-                 />
-               ))}
-               {rating === 0 && <span className="text-xs text-gray-400 ml-2">No review</span>}
+               {session.status === 'cancelled' ? (
+                 <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-700">
+                   Cancelled
+                 </span>
+               ) : session.status === 'refunded' ? (
+                 <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-purple-100 text-purple-700">
+                   Refunded to Client
+                 </span>
+               ) : session.status === 'completed' && rating === 0 ? (
+                 // 🟢 NEW: Shows "Paid" if they won a dispute or client didn't rate
+                 <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">
+                   Paid (No Review)
+                 </span>
+               ) : (
+                 <>
+                   {[1, 2, 3, 4, 5].map((star) => (
+                     <Star 
+                       key={star} 
+                       size={16} 
+                       className={`${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-100 text-gray-200'}`} 
+                     />
+                   ))}
+                 </>
+               )}
              </div>
           ) : (
              /* UPCOMING VIEW: Button 🟢 */

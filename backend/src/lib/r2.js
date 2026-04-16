@@ -8,7 +8,5 @@ export const r2Client = new S3Client({
     accessKeyId: ENV.R2_ACCESS_KEY_ID,
     secretAccessKey: ENV.R2_SECRET_ACCESS_KEY,
   },
-  // requestChecksumCalculation: "WHEN_REQUIRED",
-  // responseChecksumValidation: "WHEN_REQUIRED",
-  // forcePathStyle: true
+ 
 });

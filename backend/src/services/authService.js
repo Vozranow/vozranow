@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import redis from "../lib/redis.js";
 import { emailQueue } from "../queues/emailQueue.js";
-// import { AppError } from '../lib/appError.js';
+
 
 //**************helper fucn************ */
 const generateAccessToken = (id) => {
@@ -84,12 +84,12 @@ export const registerUser = async ({ username, email, password }) => {
       expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
     });
 
-    // await sendOtpEmail(email, "Verify your email for Solance", otp);
+    // await sendOtpEmail(email, "Verify your email for Vozranow", otp);
 
     await emailQueue.add('send-otp', {
       type: 'OTP',
       to: email,
-      sub: "Verify your email for Solance",
+      sub: "Verify your email for Vozranow",
       payload: { otp }
     });
 
@@ -215,11 +215,11 @@ export const resendOtp = async ({ email }) => {
     });
 
     // Send the email
-    // await sendOtpEmail(email, "Verify your email for Solance", otp);
+    // await sendOtpEmail(email, "Verify your email for Vozranow", otp);
     await emailQueue.add('send-otp', {
       type: 'OTP',
       to: email,
-      sub: "Verify your email for Solance",
+      sub: "Verify your email for Vozranow",
       payload: { otp }
     });
 
@@ -341,12 +341,12 @@ export const forgotPassword = async ({ email }) => {
 
     const resetLink = `${ENV.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-    // await sendForgotEmail(email, "Reset your Solance password", resetLink);
+    // await sendForgotEmail(email, "Reset your Vozranow password", resetLink);
 
     await emailQueue.add('send-forgot-password', {
       type: 'FORGOT_PASSWORD',
       to: email,
-      sub: "Reset your Solance password",
+      sub: "Reset your Vozranow password",
       payload: { resetLink }
     });
 
