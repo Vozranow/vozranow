@@ -401,24 +401,24 @@ export const getListenerDirectory = async (page = 1, limit = 10) => {
   }
 };
 
-// export const banListenerAccount = async (listenerId) => {
-//   try {
-//     // 1. Flip the ban switch
-//     const user = await User.findByIdAndUpdate(listenerId, { isBanned: true }, { new: true });
-//     if (!user) return { success: false, statusCode: 404, message: "Listener not found" };
+export const banListenerAccount = async (listenerId) => {
+  try {
+    // 1. Flip the ban switch
+    const user = await User.findByIdAndUpdate(listenerId, { isBanned: true }, { new: true });
+    if (!user) return { success: false, statusCode: 404, message: "Listener not found" };
 
-//     // 2. Force them offline in their profile so they immediately disappear from the client app
-//     await ListenerProfile.findOneAndUpdate({ userId: listenerId }, { isOnline: false });
+    // 2. Force them offline in their profile so they immediately disappear from the client app
+    await ListenerProfile.findOneAndUpdate({ userId: listenerId }, { isOnline: false });
 
-//     // (Optional Future Step): You could also add logic here to automatically refund any 
-//     // "pending" future sessions they haven't completed yet.
+    // (Optional Future Step): You could also add logic here to automatically refund any 
+    // "pending" future sessions they haven't completed yet.
 
-//     return { success: true, statusCode: 200, message: "Listener has been permanently banned and forced offline." };
-//   } catch (error) {
-//     console.error("Ban Listener Error:", error);
-//     throw error;
-//   }
-// };
+    return { success: true, statusCode: 200, message: "Listener has been permanently banned and forced offline." };
+  } catch (error) {
+    console.error("Ban Listener Error:", error);
+    throw error;
+  }
+};
 
 
 
@@ -427,7 +427,7 @@ export const getPlatformSessionLogs = async (page = 1, limit = 15, search = "") 
     const skip = (page - 1) * limit;
     let query = {};
 
-    // 🟢 NEW: The Search Logic
+    // The Search Logic
     if (search) {
       // 1. Find any users whose name or email matches the search
       const matchedUsers = await User.find({

@@ -39,7 +39,7 @@ const AdminProfilePage = () => {
     try {
       await axiosInstance.post(API_PATHS.AUTH.LOGOUT);
       if (logout) logout(); 
-      navigate("/login", { replace: true });
+      // navigate("/login", { replace: true });
     } catch (err) {
       if (logout) logout();
       navigate("/login", { replace: true });

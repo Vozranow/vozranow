@@ -5,15 +5,17 @@ import {
    DollarSign, Headphones, Target, CheckCircle,
    Menu,  TrendingUp, TrendingDown
 } from "lucide-react";
-
 import { 
   PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid
 } from 'recharts';
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
+
+// Components
 import ManagerSidebar from "../../components/layout/ManagerSidebar";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader"; // Assuming you renamed the file/import based on previous context
+
 const ManagerDashboard = () => {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,9 +37,7 @@ const ManagerDashboard = () => {
     fetchMetrics();
   }, []);
 
-  if (loading) return (
-    <SolanceLoader/>
-  );
+  if (loading) return <VozranowLoader />;
 
   if (error) return (
     <div className="min-h-screen flex items-center justify-center bg-[#FDFCF8] text-red-500 font-medium">
@@ -48,38 +48,17 @@ const ManagerDashboard = () => {
   // --- DATA MAPPING ---
   const { executiveSummary, monthlyGoals, retention, historicalTrend } = metrics;
 
-
-  //fake data 
-  const demoHistoricalTrend = [
-    { name: "Apr", revenue: 1200, payouts: 960 },
-    { name: "May", revenue: 2100, payouts: 1680 },
-    { name: "Jun", revenue: 1800, payouts: 1440 },
-    { name: "Jul", revenue: 3400, payouts: 2720 },
-    { name: "Aug", revenue: 2800, payouts: 2240 },
-    { name: "Sep", revenue: 4900, payouts: 3920 },
-    { name: "Oct", revenue: 4200, payouts: 3360 },
-    { name: "Nov", revenue: 6100, payouts: 4880 },
-    { name: "Dec", revenue: 5800, payouts: 4640 },
-    { name: "Jan", revenue: 8400, payouts: 6720 },
-    { name: "Feb", revenue: 7200, payouts: 5760 },
-    { name: "Mar", revenue: 9800, payouts: 7840 }
-  ];
-
-  const demoPieData = [
-    { name: 'Repeat Clients', value: 845, color: '#173F3A' }, 
-    { name: 'First-Time', value: 312, color: '#3B82F6' }   
-  ];
-
+  // 🟢 REAL DATA MAPPING FOR PIE CHART
   const pieData = [
-    { name: 'Repeat Clients', value: retention?.repeatSessions || 0, color: '#173F3A' }, // Solance Dark Green
+    { name: 'Repeat Clients', value: retention?.repeatSessions || 0, color: '#173F3A' }, // Vozranow Dark Green
     { name: 'First-Time', value: retention?.firstTimeSessions || 0, color: '#3B82F6' }   // Smooth Blue
   ];
 
   return (
     <div className="flex h-screen bg-[#FDFCF8] font-sans text-[#2D2A26] overflow-hidden selection:bg-[#173F3A] selection:text-white">
       
-      {/* 🟢 SIDEBAR */}  
-      <ManagerSidebar isSidebarOpen={isSidebarOpen} />
+      {/* 🟢 EXTERNAL SIDEBAR COMPONENT */}  
+      <ManagerSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
       {/* 🟢 MAIN WORKSPACE */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
@@ -94,7 +73,7 @@ const ManagerDashboard = () => {
             )}
             <div>
               <h1 className="font-serif text-3xl font-bold text-[#173F3A] tracking-tight">Welcome back, Manager.</h1>
-              <p className="text-[#8C877D] font-medium mt-1.5 text-sm">Here is what is happening with Solance today.</p>
+              <p className="text-[#8C877D] font-medium mt-1.5 text-sm">Here is what is happening with Vozranow today.</p>
             </div>
           </div>
           <div className="text-xs font-bold bg-white border border-[#E8E6E1] px-4 py-2 rounded-lg text-[#2D2A26] shadow-sm uppercase tracking-wider flex items-center gap-2">
@@ -136,8 +115,6 @@ const ManagerDashboard = () => {
             </div>
 
             {/* 📈 ROW 2: MAIN VISUALIZATIONS */}
-            
-            {/* 📈 ROW 2: MAIN VISUALIZATIONS */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Overlapping Area Chart */}
@@ -161,8 +138,8 @@ const ManagerDashboard = () => {
 
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    {/* 🟢 FIX 1: Added bottom: 20 to the margin so the months don't get chopped off */}
-                    <AreaChart data={demoHistoricalTrend} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                    {/* 🟢 USING REAL DATA: historicalTrend */}
+                    <AreaChart data={historicalTrend} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
                       <defs>
                         <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#173F3A" stopOpacity={0.3}/>
@@ -174,7 +151,6 @@ const ManagerDashboard = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F0EC" />
-                      {/* 🟢 FIX 2: Reduced dy to 10 for perfect spacing */}
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#8C877D', fontWeight: 500}} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#8C877D', fontWeight: 500}} tickFormatter={(v) => `$${v}`} />
                       <RechartsTooltip 
@@ -197,15 +173,16 @@ const ManagerDashboard = () => {
                 <div className="flex-1 flex items-center justify-center relative min-h-[200px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
+                      {/* 🟢 USING REAL DATA: pieData */}
                       <Pie
-                        data={demoPieData}
+                        data={pieData}
                         cx="50%" cy="50%"
                         innerRadius={80} outerRadius={100}
                         paddingAngle={5} dataKey="value"
                         stroke="none"
                         cornerRadius={4}
                       >
-                        {demoPieData.map((entry, index) => (
+                        {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -213,14 +190,15 @@ const ManagerDashboard = () => {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    {/* 🟢 FIX 3: Pointed this to demoPieData[0].value instead of the real retention.repeatSessions */}
-                    <span className="text-4xl font-bold text-[#173F3A]">{demoPieData[0].value}</span>
+                    {/* 🟢 USING REAL DATA FOR CENTER TEXT */}
+                    <span className="text-4xl font-bold text-[#173F3A]">{retention?.repeatSessions || 0}</span>
                     <span className="text-[10px] text-[#8C877D] font-bold uppercase tracking-widest mt-1">Repeat</span>
                   </div>
                 </div>
                 
                 <div className="mt-8 space-y-4">
-                  {demoPieData.map((item) => (
+                  {/* 🟢 USING REAL DATA FOR LEGEND */}
+                  {pieData.map((item) => (
                     <div key={item.name} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-3">
                         <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></span>
@@ -234,7 +212,7 @@ const ManagerDashboard = () => {
 
             </div>
 
-            {/* 🎯 ROW 3: TARGETS & PROGRESS (Matching your 2nd image) */}
+            {/* 🎯 ROW 3: TARGETS & PROGRESS */}
             <div className="bg-white rounded-2xl border border-[#E8E6E1] p-8 shadow-sm">
                <div className="flex items-center justify-between mb-8">
                  <div>
@@ -291,15 +269,6 @@ const ManagerDashboard = () => {
 };
 
 // --- REUSABLE SUB-COMPONENTS ---
-
-const SidebarItem = ({ icon, label, active, isOpen }) => (
-  <button className={`flex items-center w-full p-3.5 rounded-xl transition-all overflow-hidden group
-    ${active ? 'bg-white/10 text-white shadow-inner' : 'text-white/60 hover:bg-white/5 hover:text-white'}
-  `}>
-    <div className={`shrink-0 transition-transform ${!active && 'group-hover:scale-110'}`}>{icon}</div>
-    {isOpen && <span className="ml-4 text-sm font-medium tracking-wide">{label}</span>}
-  </button>
-);
 
 const StatCard = ({ title, value, growth, icon }) => {
   const isPositive = growth >= 0;
