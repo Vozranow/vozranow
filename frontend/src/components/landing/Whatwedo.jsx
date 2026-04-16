@@ -46,7 +46,7 @@ export default function Whatwedo() {
                 <span className="italic text-[#8C877D]">space</span> looks like.
               </h2>
               <p className="text-lg text-[#5C5954] max-w-md leading-relaxed font-medium opacity-90">
-                Solance isn't about clinical fixes or rigid schedules. It's about having a dedicated time where you don't have to pretend.
+                Vozranow isn't about clinical fixes or rigid schedules. It's about having a dedicated time where you don't have to pretend.
               </p>
             </div>
 

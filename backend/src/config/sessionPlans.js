@@ -1,5 +1,6 @@
 export const SESSION_PLANS = {
-  "30": { duration: 30, price: 300 },
-  "45": { duration: 45, price: 500 },
-  "60": { duration: 60, price: 650 },
+  "5": { duration: 5, price: 0 },
+  "10": { duration: 10, price: 100 },
+  "15": { duration: 15, price: 299 },
+  "30": { duration: 30, price: 499 },
 };

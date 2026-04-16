@@ -1,35 +1,52 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
-import { applyForSession, canJoinSession, completeSession, getSessionDetails } from "../controllers/sessionController.js";
+import { 
+  applyForSession, 
+  canJoinSession, 
+  completeSession, 
+  getSessionDetails,
+  getSessionHistory,
+  cancelSessionByUser, // <-- 1. Imported the new controller
+  reportSessionIssue
+} from "../controllers/sessionController.js";
 import { userKey } from "../middleware/ratelimitKeyMiddleware.js";
 import { rateLimiter } from "../middleware/ratelimiterMiddleware.js";
-import { getSessionHistory } from "../controllers/sessionController.js";
 import { getMessages } from "../controllers/messageController.js";
-// import { generateAgoraToken} from "../controllers/agoraController.js";
+
 const router = express.Router();
 
-router.post("/apply",protect,rateLimiter({
-    windowSeconds: 80, // 1 day
+router.post("/apply", protect, rateLimiter({
+    windowSeconds: 80, 
     maxRequests: 4,
     keyGenerator: userKey("session-apply"),
   }),
-  applyForSession);
+  applyForSession
+);
 
-router.get("/canJoin/:sessionId",protect,rateLimiter({
+router.get("/canJoin/:sessionId", protect, rateLimiter({
     windowSeconds: 60,
     maxRequests: 30,
     keyGenerator: userKey("can-join"),
   }),
-  canJoinSession);
-
+  canJoinSession
+);
 
 router.get("/history", protect, getSessionHistory);
 
-
 router.get("/:sessionId/messages", protect, getMessages);
 
-router.post("/complete", protect,  completeSession);
+router.post("/complete", protect, completeSession);
 
 // Add this simple GET route
 router.get("/:sessionId", protect, getSessionDetails);
+
+
+router.put("/:sessionId/cancel", protect, 
+  cancelSessionByUser
+);
+router.put(
+  "/:sessionId/report-issue", 
+  protect, 
+  reportSessionIssue
+);
 export default router;

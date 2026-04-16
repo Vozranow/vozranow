@@ -56,10 +56,10 @@ export const getUserDashboardData = async (userId) => {
     // C. Past Sessions (Preview only - Limit 5)
     Session.find({
       userId,
-      status: { $in: ["completed", "cancelled"] }
+      status: { $in: ["completed", "cancelled", "disputed", "refunded"] }
     })
     .sort({ scheduledDate: -1 })
-    .limit(2)
+    .limit(5)
     .populate("listenerId", "username")
     .select("scheduledDate status price listenerId review"),
 

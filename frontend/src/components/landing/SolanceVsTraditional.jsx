@@ -7,38 +7,38 @@ const features = [
   {
     label: "Comfort of your own safe space",
     subtext: "Connect from bed, your car, or a park bench.",
-    solance: true,
+    Vozranow: true,
     traditional: false,
   },
   {
     label: "Flexible timing (Nights & Weekends)",
     subtext: "Support that fits your schedule, not 9-to-5.",
-    solance: true,
+    Vozranow: true,
     traditional: false,
   },
   {
     label: "Switch listeners instantly",
     subtext: "Find your vibe without awkward breakup talks.",
-    solance: true,
+    Vozranow: true,
     traditional: false,
   },
   {
     label: "Text, Audio, & Video options",
     subtext: "You choose how visible you want to be.",
-    solance: true,
+    Vozranow: true,
     traditional: false,
   },
   {
     label: "No clinical diagnosis required",
     subtext: "Just talk. No labels, no patient records.",
-    solance: true,
+    Vozranow: true,
     traditional: true, // Traditional usually requires intake/diagnosis
     traditionalLabel: "Often Required", // Custom label override
-    solanceLabel: "Never",
+    VozranowLabel: "Never",
   },
 ];
 
-export default function SolanceVsTraditional() {
+export default function VozranowVsTraditional() {
   return (
     <section className="w-full bg-[#FDFCF8] py-24 px-6 md:px-12">
       <div className="mx-auto max-w-5xl">
@@ -61,9 +61,9 @@ export default function SolanceVsTraditional() {
             {/* Empty Corner */}
             <div className="col-span-5 md:col-span-6 p-6"></div>
             
-            {/* Solance Header (Highlighted) */}
+            {/* Vozranow Header (Highlighted) */}
             <div className="col-span-3 md:col-span-3 bg-[#E8F4F1] p-6 text-center">
-              <span className="font-serif text-2xl text-[#2D2A26] block">Solance</span>
+              <span className="font-serif text-2xl text-[#2D2A26] block">Vozranow</span>
             </div>
             
             {/* Traditional Header */}
@@ -89,14 +89,14 @@ export default function SolanceVsTraditional() {
                   )}
                 </div>
 
-                {/* 2. Solance Column (Middle - Highlighted) */}
+                {/* 2. Vozranow Column (Middle - Highlighted) */}
                 <div className="col-span-3 md:col-span-3 bg-[#E8F4F1]/50 p-6 flex items-center justify-center border-x border-[#E8F4F1] relative">
                   {/* Active Highlight Line on Left */}
                   <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-[#D1E6D9]" />
                   
-                  {feature.solanceLabel ? (
-                    <span className="font-bold text-[#3A6B48]">{feature.solanceLabel}</span>
-                  ) : feature.solance ? (
+                  {feature.VozranowLabel ? (
+                    <span className="font-bold text-[#3A6B48]">{feature.VozranowLabel}</span>
+                  ) : feature.Vozranow ? (
                     <div className="h-8 w-8 rounded-full bg-[#3A6B48] flex items-center justify-center shadow-sm">
                       <Check size={18} className="text-white" strokeWidth={3} />
                     </div>
@@ -128,7 +128,7 @@ export default function SolanceVsTraditional() {
         
         {/* Bottom Note */}
         <p className="mt-8 text-center text-sm text-[#8C877D] italic">
-          *Solance is a peer-support platform, not a replacement for clinical psychiatric care.
+          *Vozranow is a peer-support platform, not a replacement for clinical psychiatric care.
         </p>
 
       </div>

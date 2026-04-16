@@ -8,7 +8,7 @@ import {
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 import ManagerSidebar from "../../components/layout/ManagerSidebar";
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import VozranowLoader from "../../components/layout/SolanceLoader";
 
 const ManagerAssignSession = () => {
   // --- STATE MANAGEMENT ---
@@ -117,7 +117,7 @@ const ManagerAssignSession = () => {
     setModalAlert({ type: "", text: "" });
   };
 
-  if (loading) return <SolanceLoader/>;
+  if (loading) return <VozranowLoader/>;
 
   return (
     <div className="flex h-screen bg-[#FDFCF8] font-sans text-[#2D2A26] overflow-hidden selection:bg-[#173F3A] selection:text-white relative">

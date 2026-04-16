@@ -51,7 +51,7 @@ export const getDashboardData = async (userId) => {
             sessionsThisMonth: { $sum: 1 },
             // 🟢 The crucial payout fix is here
             earnedThisMonth: { 
-              $sum: { $ifNull: ["$listenerPayout", { $multiply: ["$price", 0.80] }] } 
+              $sum: { $ifNull: ["$listenerPayout", { $multiply: ["$price", 0.20] }] } 
             },
             minutesThisMonth: { $sum: "$actualDurationMinutes" }
           }

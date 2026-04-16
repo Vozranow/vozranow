@@ -1,13 +1,10 @@
 import express from "express";
 import { authorize, protect } from "../middleware/authMiddleware.js";
-import { getPendingApplications, reviewApplication} from "../controllers/applicationController.js";
-import { banListener, getEscalatedSessions, getFinancials, getListeners, getManagerDashboard, getSessionLogs, payListener} from "../controllers/managerController.js";
+
+import { banListener, createPlatformAccount, getDisputedSessions, getEscalatedSessions, getFinancials, getListeners, getManagerDashboard, getSessionLogs, payListener, resolveDispute} from "../controllers/managerController.js";
 
 
 const router = express.Router();
-
-router.get("/pending", protect,authorize("manager"),getPendingApplications);
-router.put("/application/:id/review", protect,authorize("manager"),reviewApplication);
 
 router.get('/metrics', protect , authorize("manager"), getManagerDashboard);
 
@@ -27,4 +24,11 @@ router.get(
   authorize('manager'), // Only allow authorized staff
   getEscalatedSessions
 );
+
+router.get('/disputes', protect, authorize('manager'), getDisputedSessions);
+
+router.put('/disputes/:sessionId/resolve', protect, authorize('manager'), resolveDispute);
+
+router.post('/add-staff', protect, authorize('manager'), createPlatformAccount);
+
 export default router;

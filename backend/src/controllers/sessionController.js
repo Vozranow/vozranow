@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 import Session from "../models/session.js";
-import { debitWallet } from "../services/walletServices.js";
-import { SESSION_PLANS } from "../config/sessionPlans.js";
+import User from '../models/users.js';
+import WalletTransaction from '../models/walletTransaction.js'; 
+import { emailQueue } from '../queues/emailQueue.js';
 import redis from "../lib/redis.js";
 import listenerProfile from "../models/listenerProfile.js";
 import * as sessionService from '../services/sessionService.js';
@@ -118,14 +119,14 @@ export const getSessionHistory = async (req, res) => {
     // Find completed or cancelled sessions
     const query = { 
         userId, 
-        status: { $in: ["completed", "cancelled"] } 
+        status: { $in: ["completed", "cancelled", "disputed", "refunded"] } 
     };
 
     const sessions = await Session.find(query)
       .sort({ scheduledDate: -1 }) // Newest first
       .skip(skip)
       .limit(limit)
-      .populate("listenerId", "username"); // Show who they talked to
+      .populate("listenerId", "username"); // Show who they talked to`
 
     const total = await Session.countDocuments(query);
 
@@ -240,11 +241,11 @@ export const completeSession = async (req, res) => {
     
     await session.save();
 
-    // 🟢 NEW: Get the exact listener payout. 
-    // Fallback to 80% of price ONLY IF it's an old pending session from before the schema update.
+     
+    // Fallback to 20% of price ONLY IF it's an old pending session from before the schema update.
     const earningsToAdd = session.listenerPayout !== undefined 
       ? session.listenerPayout 
-      : (session.price * 0.80);
+      : (session.price * 0.20);
 
     // 3️⃣ UPDATE LISTENER PROFILE STATS
     // We increment the total sessions and total earnings (with the platform fee deducted!)
@@ -257,6 +258,11 @@ export const completeSession = async (req, res) => {
         }
       }
     );
+    if (session.bookedDurationMinutes === 5 && session.price === 0) {
+      await User.findByIdAndUpdate(session.userId, { 
+        hasUsedFreeTrial: true 
+      });
+    }
 
     res.status(200).json({ success: true });
 
@@ -372,4 +378,248 @@ export const getSessionDetails = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+
+// @desc    Cancel an assigned session (User Side)
+// @route   PUT /api/sessions/:sessionId/cancel
+export const cancelSessionByUser = async (req, res) => {
+    const sessionDoc = await mongoose.startSession();
+    sessionDoc.startTransaction();
+
+    try {
+        const { sessionId } = req.params;
+        const userId = req.user._id;
+
+        // 1. Fetch Session
+        const session = await Session.findById(sessionId).session(sessionDoc);
+
+        if (!session) {
+            await sessionDoc.abortTransaction();
+            return res.status(404).json({ message: "Session not found." });
+        }
+
+        // 2. Security Check: Does this belong to the user?
+        if (session.userId.toString() !== userId.toString()) {
+            await sessionDoc.abortTransaction();
+            return res.status(403).json({ message: "Unauthorized to cancel this session." });
+        }
+
+        // 3. Status Check: Only assigned sessions can be cancelled
+        if (session.status !== "assigned") {
+            await sessionDoc.abortTransaction();
+            return res.status(400).json({ message: "You can only cancel a session that has been officially assigned." });
+        }
+
+        let refundPercentage = 100; // Default 
+        const now = new Date();
+
+        // 4. Time Window & Refund Math
+        if (session.scheduledStartAt) {
+            const timeUntilSessionMs = session.scheduledStartAt.getTime() - now.getTime();
+            const minutesUntilSession = timeUntilSessionMs / (1000 * 60);
+            const hoursUntilSession = timeUntilSessionMs / (1000 * 60 * 60);
+
+            // A. THE LOCKDOWN: Less than 15 minutes
+            if (minutesUntilSession <= 15) {
+                await sessionDoc.abortTransaction();
+                return res.status(400).json({ 
+                    message: "Cancellations are not permitted within 15 minutes of the session start time. The lobby is opening." 
+                });
+            }
+
+            // B. THE MATH: 24hr and 2hr windows
+            if (hoursUntilSession >= 24) {
+                refundPercentage = 100;
+            } else if (hoursUntilSession >= 2) {
+                refundPercentage = 50;
+            } else {
+                refundPercentage = 0;
+            }
+        }
+
+        // 5. Calculate actual refund amount
+        const refundAmount = session.price * (refundPercentage / 100);
+
+        // 6. Execute Wallet Refund & Ledger Entry (Race-condition safe)
+        if (refundAmount > 0) {
+            // new: true ensures updatedUser contains the balance AFTER the $inc operation
+            const updatedUser = await User.findByIdAndUpdate(
+                userId,
+                { $inc: { walletBalance: refundAmount } },
+                { session: sessionDoc, new: true } 
+            );
+
+            // Create the ledger entry
+            await WalletTransaction.create(
+                [{
+                    userId: userId,
+                    type: "REFUND",
+                    amount: refundAmount,
+                    balanceAfter: updatedUser.walletBalance,
+                    referenceId: session._id.toString(),
+                    status: "success",
+                }],
+                { session: sessionDoc }
+            );
+        }
+
+        // 7. Update Session State
+        const listenerIdToNotify = session.listenerId; // Save this before we clear it
+
+        session.status = "cancelled";
+        session.cancelledBy = userId;
+        session.cancellationType = "user_request";
+        session.cancellationReason = req.body?.reason || "User cancelled via dashboard.";
+        
+        // Record the refund accounting
+        session.refund = {
+            percentage: refundPercentage,
+            amount: refundAmount,
+            processedAt: now
+        };
+
+        session.timeline.push({
+            status: "cancelled",
+            time: now,
+            note: `Cancelled by user. Refunded ${refundPercentage}% (₹${refundAmount}).`
+        });
+
+        await session.save({ session: sessionDoc });
+
+        // 8. Commit Transaction
+        await sessionDoc.commitTransaction();
+        sessionDoc.endSession();
+
+        // 9. Fire Background Events (Outside the transaction so it doesn't block)
+        // Clear Redis Caches
+        if (typeof redis !== 'undefined' && redis.status === 'ready') {
+            await redis.del(`user:${userId}`); // Clear user cache for the wallet balance update
+            await redis.del(`dashboard:${userId}`);
+            if (listenerIdToNotify) await redis.del(`dashboard:listener:${listenerIdToNotify}`);
+        }
+
+        // Notify the Listener if they were already assigned
+        if (listenerIdToNotify) {
+            const listener = await User.findById(listenerIdToNotify).select('email username');
+            const formattedTime = new Date(session.scheduledStartAt).toLocaleString('en-US', { 
+                weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
+            await emailQueue.add('listener-cancellation-notice', {
+                type: 'USER_CANCELLED_SESSION',
+                to: listener.email,
+                sub: "Session Cancelled - Vozranow",
+                payload: {
+                    speakerName: listener.username,
+                    scheduledTime: formattedTime
+                }
+            });
+        }
+
+        // 10. Return Success
+        return res.status(200).json({
+            message: `Session successfully cancelled. ₹${refundAmount} has been refunded to your wallet.`,
+            refundAmount,
+            refundPercentage
+        });
+
+    } catch (error) {
+        await sessionDoc.abortTransaction();
+        sessionDoc.endSession();
+        console.error("Cancel Session Error:", error);
+        return res.status(500).json({ message: "Server error during cancellation." });
+    }
+};
+
+
+
+// @desc    Report an issue with a session (User Side)
+// @route   PUT /api/sessions/:sessionId/report-issue
+export const reportSessionIssue = async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const userId = req.user._id;
+        const { reason, details } = req.body;
+
+        // 1. Validate Input
+        const validReasons = ["Listener No-Show", "Technical Glitch", "Inappropriate Behavior", "Other"];
+        if (!validReasons.includes(reason)) {
+            return res.status(400).json({ message: "Invalid report reason selected." });
+        }
+
+        // 2. Fetch Session
+        const session = await Session.findById(sessionId);
+
+        if (!session) {
+            return res.status(404).json({ message: "Session not found." });
+        }
+
+        // 3. Security Check
+        if (session.userId.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "Unauthorized to report this session." });
+        }
+
+        // 4. Status Check: Must be active or assigned
+        if (!["assigned", "ongoing"].includes(session.status)) {
+            return res.status(400).json({ 
+                message: `Cannot report an issue for a session that is currently ${session.status}.` 
+            });
+        }
+
+        // 5. Time Math & Validations
+        const now = new Date();
+        const scheduledStart = new Date(session.scheduledStartAt);
+        const lobbyOpenTime = new Date(scheduledStart.getTime() - 15 * 60 * 1000); // T-15 mins
+        const noShowThreshold = new Date(scheduledStart.getTime() + 10 * 60 * 1000); // T+10 mins
+
+        // Rule A: Cannot report anything before the lobby even opens
+        if (now < lobbyOpenTime) {
+            return res.status(400).json({ 
+                message: "You cannot report an issue before the session lobby has opened." 
+            });
+        }
+
+        // Rule B: Specific block for "Listener No-Show"
+        if (reason === "Listener No-Show" && now < noShowThreshold) {
+            const minsLeft = Math.ceil((noShowThreshold.getTime() - now.getTime()) / (1000 * 60));
+            return res.status(400).json({ 
+                message: `Please wait ${minsLeft} more minute(s). Listeners have a 10-minute grace period to join.` 
+            });
+        }
+
+        // 6. Update Session State
+        session.status = "disputed";
+        session.dispute = {
+            reason: reason,
+            details: details || "",
+            reportedAt: now
+        };
+
+        session.timeline.push({
+            status: "disputed",
+            time: now,
+            note: `User reported an issue: ${reason}`
+        });
+
+        await session.save();
+
+        // 7. Clear Caches (So it instantly drops off their Upcoming UI)
+        if (typeof redis !== 'undefined' && redis.status === 'ready') {
+            await redis.del(`dashboard:${userId}`);
+            if (session.listenerId) {
+                await redis.del(`dashboard:listener:${session.listenerId}`);
+            }
+        }
+
+        // 8. Return Success
+        return res.status(200).json({
+            message: "Issue reported successfully. The session is now under review by our management team.",
+            session
+        });
+
+    } catch (error) {
+        console.error("Report Issue Error:", error);
+        return res.status(500).json({ message: "Server error while reporting issue." });
+    }
 };

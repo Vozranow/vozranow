@@ -5,7 +5,7 @@ import axiosInstance from "../../utils/axiosInstance.js";
 import API_PATHS from "../../utils/apiPaths.js";
 import { useAuth } from "../../context/useAuth.js";
 import { ENV } from "@/utils/env.js";
-import SolanceLoader from "../../components/layout/SolanceLoader.jsx";
+
 
 // Helper to load Razorpay script dynamically
 const loadRazorpayScript = () => {
@@ -20,17 +20,17 @@ const loadRazorpayScript = () => {
 
 const AddMoneyPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // Get user details for prefill
+  const { user } = useAuth(); // Get user
   
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(""); // For input validation
-  const [alert, setAlert] = useState({ type: "", text: "" }); // 🟢 For API/Payment status
+  const [alert, setAlert] = useState({ type: "", text: "" }); 
 
   const predefinedAmounts = [100, 500, 1000, 2000];
 
   const handlePayment = async () => {
-    // Clear previous alerts
+  
     setAlert({ type: "", text: "" });
 
     if (!amount || Number(amount) <= 0) {
@@ -59,12 +59,12 @@ const AddMoneyPage = () => {
         key: ENV.RAZORPAY_KEY, 
         amount: order.amount, 
         currency: "INR",
-        name: "Solance",
+        name: "Vozranow",
         description: "Wallet Top-up",
         order_id: order.id,
         modal: {
           ondismiss: function() {
-            setLoading(false); // Instantly stop the button spinner
+            setLoading(false); 
             setAlert({ type: "error", text: "Payment was cancelled." });
           }
         },
@@ -116,8 +116,7 @@ const AddMoneyPage = () => {
       setAlert({ type: "error", text: err.response?.data?.message || err.message || "Something went wrong initiating payment." });
       setLoading(false);
     } 
-    // Notice we removed the finally block setting loading to false here, 
-    // otherwise the button stops spinning while the Razorpay modal is still open!
+    
   };
 
   return (
@@ -136,7 +135,7 @@ const AddMoneyPage = () => {
         
         <div className="text-center mb-8">
           <h1 className="font-serif text-3xl text-[#E8F4F1]">Add Money</h1>
-          <p className="text-[#A3C6C0] text-sm mt-1">Securely top up your Solance wallet</p>
+          <p className="text-[#A3C6C0] text-sm mt-1">Securely top up your Vozranow wallet</p>
         </div>
 
         {/* Main Card */}
@@ -190,7 +189,7 @@ const AddMoneyPage = () => {
              <div className="space-y-1">
                 <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">Non-Refundable</p>
                 <p className="text-xs text-amber-700 leading-relaxed">
-                  Money added to your wallet can only be used for sessions on Solance. It <b>cannot</b> be transferred back to your bank account.
+                  Money added to your wallet can only be used for sessions on Vozranow. It <b>cannot</b> be transferred back to your bank account.
                 </p>
              </div>
           </div>

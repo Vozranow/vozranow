@@ -57,63 +57,31 @@ const seed = async () => {
 
     // 5. Define Listeners Data 🎧
     const listenersData = [
-      {
-        name: "Dr. Sarah (Pro)",
-        email: "sarah@test.com",
-        online: true,
-        days: ["Mon", "Wed", "Fri"],
-        sessions: 150,
-        rating: 4.9,
-        bio: "Clinical psychologist with 10 years of experience."
-      },
-      {
-        name: "John Doe (Newbie)",
-        email: "john@test.com",
-        online: true,
-        days: ["Mon", "Tue"],
-        sessions: 5, // Bumped slightly so math works better
-        rating: 5.0,
-        bio: "Good listener, here to help."
-      },
-      {
-        name: "Emily Blunt (Busy)",
-        email: "emily@test.com",
-        online: false,
-        days: ["Sat", "Sun"],
-        sessions: 45,
-        rating: 4.5,
-        bio: "Specialist in anxiety and stress."
-      },
-      {
-        name: "Rahul Gupta (Mid)",
-        email: "rahul@test.com",
-        online: true,
-        days: ["Mon", "Thu"],
-        sessions: 12,
-        rating: 3.8,
-        bio: "Empathetic listener for students."
-      },
-      {
-        name: "Lisa Ray (Always Open)",
-        email: "lisa@test.com",
-        online: true,
-        days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        sessions: 300,
-        rating: 4.8,
-        bio: "Available 24/7 for urgent care."
-      }
+      { name: "Dr. Sarah (Pro)", email: "sarah@test.com", online: true, days: ["Mon", "Wed", "Fri"], sessions: 150, rating: 4.9, bio: "Clinical psychologist." },
+      { name: "John Doe (Newbie)", email: "john@test.com", online: true, days: ["Mon", "Tue"], sessions: 10, rating: 5.0, bio: "Good listener." },
+      { name: "Emily Blunt (Busy)", email: "emily@test.com", online: false, days: ["Sat", "Sun"], sessions: 45, rating: 4.5, bio: "Stress specialist." },
+      { name: "Rahul Gupta (Mid)", email: "rahul@test.com", online: true, days: ["Mon", "Thu"], sessions: 12, rating: 3.8, bio: "Student empathetic listener." },
+      { name: "Lisa Ray (Always Open)", email: "lisa@test.com", online: true, days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], sessions: 300, rating: 4.8, bio: "Available 24/7." }
     ];
 
     const randomReviews = [
       "Truly helpful session.", "I felt heard for the first time.", 
       "Connection was okay, but advice was great.", "Very patient listener.", 
-      "Helped me clear my mind.", "Life changing conversation.", "Highly recommended!"
+      "Highly recommended!"
     ];
 
-    // 6. Loop Listeners -> Create Profile -> Create 5 Completed Sessions
+    // 🟢 HELPER: Generate random date in a specific month (0 = Jan, 1 = Feb, 2 = Mar)
+    const getRandomDateInMonth = (year, monthIndex) => {
+      const start = new Date(year, monthIndex, 1);
+      const end = new Date(year, monthIndex + 1, 0); // Last day of month
+      const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+      date.setHours(Math.floor(Math.random() * 12) + 8); // 8 AM - 8 PM
+      return date;
+    };
+
+    // 6. Loop Listeners -> Create Profile -> Create Sessions spanning Jan, Feb, Mar
     for (const l of listenersData) {
       
-      // A. Create User
       const user = await User.create({
         username: l.name,
         email: l.email,
@@ -123,80 +91,69 @@ const seed = async () => {
         walletBalance: 1000
       });
 
-      // 🟢 Calculate Financials (Assuming $400 listener payout per session)
+      // 🟢 Calculate Financials
+      // We are forcing 4 pending sessions total per listener (1 in Feb, 3 in Mar). 4 * $400 = $1,600 pending.
       const totalLifetimeEarnings = l.sessions * 400;
-      // We are going to make 2 recent sessions "pending" (2 * 400 = 800)
-      const pendingAmount = 800; 
+      const pendingAmount = 1600; 
       const paidOutAmount = Math.max(0, totalLifetimeEarnings - pendingAmount);
 
-      // B. Create Profile
       await ListenerProfile.create({
         userId: user._id,
         isOnline: l.online,
         preferredDays: l.days,
         totalSessionsCompleted: l.sessions,
         totalEarnings: totalLifetimeEarnings, 
-        totalPaidOut: paidOutAmount, // 👈 New field populated!
+        totalPaidOut: paidOutAmount, 
         bio: l.bio,
-        rating: {
-          average: l.rating,
-          count: l.sessions > 0 ? 10 : 1
-        }
+        rating: { average: l.rating, count: 10 }
       });
 
-      // C. Create Session History (Mix of Pending and Paid)
       const sessionDocs = [];
-      for (let i = 0; i < 5; i++) {
-        const randomSeekerId = seekerIds[Math.floor(Math.random() * seekerIds.length)];
-        
-        // 🟢 THE MIX: First 2 are recent & pending. Last 3 are older & paid.
-        const isPending = i < 2; 
-        const daysAgo = isPending ? Math.floor(Math.random() * 10) : Math.floor(Math.random() * 20) + 20;
-        
-        const date = new Date();
-        date.setDate(date.getDate() - daysAgo);
-        date.setHours(Math.floor(Math.random() * 12) + 8); 
-        
-        const endTime = new Date(date.getTime() + 60 * 60 * 1000); 
 
-        sessionDocs.push({
-          userId: randomSeekerId,
+      // 🟢 HELPER: Creates the session object
+      const buildSession = (date, status) => {
+        const endTime = new Date(date.getTime() + 60 * 60 * 1000); 
+        return {
+          userId: seekerIds[Math.floor(Math.random() * seekerIds.length)],
           listenerId: user._id,
-          assignedBy: staff[0]._id, // Assigned by SuperAdmin
+          assignedBy: staff[0]._id, 
           status: "completed",
-          
           scheduledDate: date,
           preferredTimeStart: date,
           preferredTimeEnd: endTime,
           scheduledStartAt: date,
           startedAt: date,
           endedAt: endTime,
-          
           bookedDurationMinutes: 60,
           actualDurationMinutes: 60,
-          
-          // 🟢 THE NEW FINANCIAL ENGINE FIELDS
           price: 500,
           listenerPayout: 400,
           platformFee: 100,
-          payoutStatus: isPending ? "pending" : "paid",
-          
+          payoutStatus: status, // "pending" or "paid"
           review: {
             rating: Math.round(l.rating), 
             comment: randomReviews[Math.floor(Math.random() * randomReviews.length)],
             createdAt: endTime
           },
-          
           timeline: [
             { status: "created", time: new Date(date.getTime() - 86400000), note: "Booked" },
-            { status: "assigned", time: new Date(date.getTime() - 80000000), note: "Assigned" },
             { status: "completed", time: endTime, note: "Session finished" }
           ]
-        });
-      }
+        };
+      };
+
+      // 🗓️ JANUARY 2026: 3 Sessions (All Paid)
+      for (let i = 0; i < 3; i++) sessionDocs.push(buildSession(getRandomDateInMonth(2026, 0), "paid"));
       
+      // 🗓️ FEBRUARY 2026: 3 Paid, 1 Pending (Testing a late payout!)
+      for (let i = 0; i < 3; i++) sessionDocs.push(buildSession(getRandomDateInMonth(2026, 1), "paid"));
+      sessionDocs.push(buildSession(getRandomDateInMonth(2026, 1), "pending")); 
+
+      // 🗓️ MARCH 2026: 3 Sessions (All Pending)
+      for (let i = 0; i < 3; i++) sessionDocs.push(buildSession(getRandomDateInMonth(2026, 2), "pending"));
+
       await Session.insertMany(sessionDocs);
-      console.log(`✅ Created: ${l.name} + 5 Sessions (2 Pending, 3 Paid)`);
+      console.log(`✅ Created: ${l.name} + 10 Sessions (Jan-Mar)`);
     }
 
     console.log("✨ All Data Imported Successfully!");

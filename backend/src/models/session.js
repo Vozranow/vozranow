@@ -23,7 +23,7 @@ const sessionSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "assigned", "ongoing", "completed", "cancelled", "escalated"],
+      enum: ["pending", "assigned", "ongoing", "completed", "cancelled", "escalated","disputed", "refunded"],
       default: "pending",
     },
 
@@ -125,11 +125,41 @@ const sessionSchema = new mongoose.Schema(
     // NEW: Track status changes for the dashboard UI
     timeline: [
       {
-        status: { type: String, enum: ["created", "assigned", "started", "completed", "cancelled" , "escalated"] },
+        status: { type: String, enum: ["created", "assigned", "started", "completed", "cancelled" , "escalated", "disputed", "refunded"] },
         time: { type: Date, default: Date.now },
         note: String // e.g., "Assigned by Admin John"
       }
     ],
+    
+    dispute: {
+      reason: { type: String, default: null }, // e.g., "Listener No-Show", "Technical Glitch"
+      details: { type: String, default: "" },  // Any extra context the user typed
+      reportedAt: { type: Date, default: null },
+      managerNote: { type: String, default: "" } // Why the manager approved/rejected it
+    },
+    
+    cancelledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+    cancellationReason: {
+      type: String,
+      default: ""
+    },
+
+    
+    refund: {
+      percentage: { type: Number, default: 0 }, // 100, 50, or 0
+      amount: { type: Number, default: 0 },     // The actual ₹ added back to wallet
+      processedAt: { type: Date, default: null }
+    },
+
+    bailedListenerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
     attendance: {
       userJoinedAt: { type: Date, default: null },
       listenerJoinedAt: { type: Date, default: null },

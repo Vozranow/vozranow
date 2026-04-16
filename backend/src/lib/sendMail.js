@@ -1,24 +1,3 @@
-// import nodemailer from "nodemailer";
-// import { ENV } from "./env.js";
-// const transporter = nodemailer.createTransport({
-//   secure: true,
-//   host: 'smtp.gmail.com',
-//   port: 465,
-//   auth: {
-//     user: 'soumyodeepc641@gmail.com',
-//     pass: 'pnwfoigulfzgaztt'
-//   }
-// });
-
-// export const sendOtpEmail = async(to, sub, msg) => {
-//   transporter.sendMail({
-//     to: to,
-//     subject: sub,
-//     html: msg
-//   });
-// }
-
-
 
 import { ENV } from "./env.js";
 import { Resend } from 'resend';
@@ -65,7 +44,7 @@ export const sendResendEmail = async (to, subject, htmlContent) => {
 
   if (error) {
     console.error("Resend Error:", error);
-    throw error; // Crucial: Throwing tells BullMQ to retry!
+    throw error; // tells BullMQ to retry
   }
   return data;
 };

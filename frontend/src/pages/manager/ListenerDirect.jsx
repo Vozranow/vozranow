@@ -4,12 +4,13 @@ import { Link } from "react-router-dom";
 import { 
   LayoutDashboard, Users, ShieldAlert, LogOut, Headphones, Activity,
   Calendar, CheckCircle2, AlertCircle, Menu, CreditCard, 
-  Search, Eye, Trash2, Star, X, MessageSquare
+  Eye, Trash2, Star, X, MessageSquare // Removed Search icon
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
-import ManagerSidebar from "../../components/layout/ManagerSidebar"; // Adjust path
-import SolanceLoader from "../../components/layout/SolanceLoader";
+import ManagerSidebar from "../../components/layout/ManagerSidebar"; 
+import VozranowLoader from "../../components/layout/SolanceLoader";
+
 const ListenerDirectory = () => {
   // --- STATE MANAGEMENT ---
   const [data, setData] = useState(null);
@@ -30,7 +31,6 @@ const ListenerDirectory = () => {
   const fetchDirectory = async () => {
     setLoading(true);
     try {
-      // Create this path in your apiPaths.js: MANAGER.GET_LISTENERS = "/api/manager/directory/listeners"
       const res = await axiosInstance.get(`/api/manager/directory/listeners?page=${currentPage}&limit=10`);
       setData(res.data);
       setError("");
@@ -65,7 +65,6 @@ const ListenerDirectory = () => {
     setProcessingId(listenerId);
     
     try {
-      // Create this path in your apiPaths.js: MANAGER.BAN_LISTENER = "/api/manager/directory/listeners"
       await axiosInstance.put(`/api/manager/directory/listeners/${listenerId}/ban`);
       await fetchDirectory(); // Refresh the list
       showNotification('Listener has been successfully banned and taken offline.');
@@ -77,7 +76,7 @@ const ListenerDirectory = () => {
   };
 
   if (loading && !data) return (
-    <SolanceLoader/>
+    <VozranowLoader/>
   );
 
   return (
@@ -231,15 +230,7 @@ const ListenerDirectory = () => {
               <p className="text-[#8C877D] font-medium mt-1.5 text-sm">Manage platform talent, reviews, and access.</p>
             </div>
           </div>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#8C877D]" size={18} />
-            <input 
-              type="text" 
-              placeholder="Search listeners..." 
-              className="pl-10 pr-4 py-2.5 bg-white border border-[#E8E6E1] rounded-xl text-sm focus:outline-none focus:border-[#173F3A] shadow-sm w-64 transition-all"
-            />
-          </div>
+          {/* SEARCH BAR COMPLETELY REMOVED FROM HERE */}
         </header>
 
         <div className="flex-1 overflow-y-auto px-10 pb-12 scrollbar-thin scrollbar-thumb-gray-200">
@@ -322,13 +313,28 @@ const ListenerDirectory = () => {
                   </table>
                 </div>
 
-                {/* Pagination (Static UI based on payload) */}
+                {/* 🟢 FULL PAGINATION UI */}
                 {data.pagination.totalPages > 1 && (
-                  <div className="p-4 border-t border-[#E8E6E1] flex items-center justify-between bg-[#FDFCF8]/50">
+                  <div className="p-4 border-t border-[#E8E6E1] flex items-center justify-between bg-[#FDFCF8]/50 mt-auto">
                     <p className="text-xs font-bold text-[#8C877D]">
                       Showing Page {data.pagination.currentPage} of {data.pagination.totalPages}
                     </p>
-                    {/* Add standard Next/Prev buttons here later if needed */}
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 text-xs font-bold text-[#5C5954] bg-white border border-[#E8E6E1] rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Previous
+                      </button>
+                      <button 
+                        onClick={() => setCurrentPage(p => Math.min(data.pagination.totalPages, p + 1))}
+                        disabled={currentPage === data.pagination.totalPages}
+                        className="px-4 py-2 text-xs font-bold text-[#5C5954] bg-white border border-[#E8E6E1] rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Next
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

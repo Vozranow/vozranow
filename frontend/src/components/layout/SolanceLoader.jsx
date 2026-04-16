@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 
-const SolanceLoader = ({ text }) => {
+const VozranowLoader = ({ text }) => {
   return (
     <div className="flex flex-col h-screen w-full items-center justify-center bg-[#FDFCF8] gap-3">
       <Loader2 size={40} className="animate-spin text-[#173F3A]" />
@@ -14,4 +14,4 @@ const SolanceLoader = ({ text }) => {
   );
 };
 
-export default SolanceLoader;
+export default VozranowLoader;

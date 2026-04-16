@@ -19,7 +19,7 @@ export const protect = async(req, res, next) => {
 
     const cacheKey = `user:${decoded.id}`;
 
-    // ⚡ 2. CHECK REDIS FIRST
+    //CHECK REDIS 
     const cachedUser = await redis.get(cacheKey);
 
     if (cachedUser) {

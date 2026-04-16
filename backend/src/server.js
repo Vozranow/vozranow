@@ -18,6 +18,8 @@ import './workers/emailWorker.js';
 import './cron/checker.js';
 const __dirname = path.resolve();
 const app = express();
+// Trust Render's proxy for secure cookies
+app.set('trust proxy', 1);
 
 
 app.get("/", (req, res)=>{
@@ -28,7 +30,7 @@ app.get("/", (req, res)=>{
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174","http://172.28.208.1:5173","https://172.28.208.1:5174"], // 👈 exact frontend origin
+    origin: ["http://localhost:5173", "http://localhost:5174","http://172.28.208.1:5173","https://172.28.208.1:5174"], 
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true, // REQUIRED for cookies

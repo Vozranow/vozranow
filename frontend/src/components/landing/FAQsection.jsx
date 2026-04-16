@@ -2,19 +2,19 @@
 import React, { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 
-// --- FAQ Data (Adapted for Solance) ---
+// --- FAQ Data (Adapted for Vozranow) ---
 const faqs = [
   {
-    question: "How much does Solance cost?",
-    answer: "Solance offers flexible plans starting at just $29/week. You can also pay per session if you prefer not to subscribe. We believe support should be accessible to everyone."
+    question: "How much does Vozranow cost?",
+    answer: "Vozranow offers flexible plans starting at just $29/week. You can also pay per session if you prefer not to subscribe. We believe support should be accessible to everyone."
   },
   {
     question: "Is this a replacement for therapy?",
-    answer: "No. Solance provides emotional support through active listening and peer connection. While incredibly helpful for stress, anxiety, and loneliness, our listeners are not licensed psychologists and do not diagnose mental health conditions."
+    answer: "No. Vozranow provides emotional support through active listening and peer connection. While incredibly helpful for stress, anxiety, and loneliness, our listeners are not licensed psychologists and do not diagnose mental health conditions."
   },
   {
     question: "How are listeners vetted?",
-    answer: "Every listener on Solance undergoes a rigorous background check and completes our 40-hour 'Empathetic Listening' certification program before they can take their first call."
+    answer: "Every listener on Vozranow undergoes a rigorous background check and completes our 40-hour 'Empathetic Listening' certification program before they can take their first call."
   },
   {
     question: "Is it completely anonymous?",
@@ -46,7 +46,7 @@ export default function FAQsection() {
                 Any questions?
               </h2>
               <p className="text-[#3A6B65] text-lg">
-                Find trust-worthy answers about how Solance helps you grow.
+                Find trust-worthy answers about how Vozranow helps you grow.
               </p>
             </div>
 

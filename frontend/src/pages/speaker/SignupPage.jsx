@@ -134,7 +134,7 @@ const SignupPage = () => {
         
         {/* Mobile Logo */}
         <div className="lg:hidden absolute top-8 left-8 font-serif text-2xl font-bold text-[#173F3A]">
-           Solance.
+           Vozranow.
         </div>
 
         <div className="w-full max-w-md space-y-8">
@@ -325,7 +325,7 @@ const SignupPage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-[#173F3A]/30 to-[#173F3A]/90" />
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
            <div className="flex justify-end">
-              <div className="font-serif text-3xl font-bold tracking-tight">Solance.</div>
+              <div className="font-serif text-3xl font-bold tracking-tight">Vozranow.</div>
            </div>
            <div className="space-y-6 max-w-md ml-auto text-right">
               <blockquote className="font-serif text-4xl leading-tight">
@@ -333,7 +333,7 @@ const SignupPage = () => {
               </blockquote>
               <cite className="block text-lg font-light opacity-80 not-italic">— George Eliot</cite>
            </div>
-           <div className="text-sm opacity-60 text-right">© 2024 Solance. All rights reserved.</div>
+           <div className="text-sm opacity-60 text-right">© 2026 Vozranow. All rights reserved.</div>
         </div>
       </div>
 

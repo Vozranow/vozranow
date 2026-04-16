@@ -119,3 +119,86 @@ export const getEscalatedSessions = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch escalated sessions" });
   }
 };
+
+
+// @desc    Get all disputed sessions for Manager Dashboard
+// @route   GET /api/manager/disputes
+export const getDisputedSessions = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const result = await managerService.getDisputedSessionsService(page, limit);
+
+    if (!result.success) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
+
+    return res.status(result.statusCode).json(result.data);
+
+  } catch (error) {
+    console.error("Manager Fetch Disputes Error:", error);
+    next(error);
+  }
+};
+
+// @desc    Approve or Reject a Dispute (Refund or Deny)
+// @route   PUT /api/manager/disputes/:sessionId/resolve
+export const resolveDispute = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    const { action, managerNote } = req.body;
+    const managerId = req.user._id; 
+
+    const result = await managerService.resolveDisputeService(
+      sessionId, 
+      action, 
+      managerNote, 
+      managerId
+    );
+
+    if (!result.success) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
+
+    return res.status(result.statusCode).json({
+      message: result.message,
+      session: result.data
+    });
+
+  } catch (error) {
+    console.error("Manager Resolve Dispute Error:", error);
+    next(error);
+  }
+};
+
+export const createPlatformAccount = async (req, res, next) => {
+  try {
+    const { username, email, password, role, tags, preferredDays } = req.body;
+    
+    // Group it neatly for the service
+    const accountData = {
+      username,
+      email,
+      password,
+      role,
+      tags,
+      preferredDays
+    };
+
+    const result = await managerService.createPlatformAccountService(accountData);
+
+    if (!result.success) {
+      return res.status(result.statusCode).json({ message: result.message });
+    }
+
+    return res.status(result.statusCode).json({
+      message: result.message,
+      data: result.data
+    });
+
+  } catch (error) {
+    console.error("Manager Create Platform Account Error:", error);
+    next(error);
+  }
+};

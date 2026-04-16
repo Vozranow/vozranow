@@ -41,7 +41,7 @@ export default function Hero() {
 
           {/* Subtext: Clear, honest, reassuring */}
           <p className="text-lg md:text-xl text-[#5C5954] leading-relaxed mb-10 max-w-lg">
-            Solance connects you with trained, empathetic listeners for private 1-on-1 sessions. 
+            Vozranow connects you with trained, empathetic listeners for private 1-on-1 sessions. 
             No judgment, no bots, and no pressure to "fix" yourself. 
             Just a safe space to be heard.
           </p>
@@ -140,3 +140,4 @@ export default function Hero() {
     </section>
   );
 }
+

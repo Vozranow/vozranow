@@ -42,7 +42,7 @@ export default function HowitWorks() {
     <section className="w-full bg-[#FDFCF8] py-24 px-6 md:px-12 lg:px-24">
       <div className="mx-auto max-w-7xl">
         <h2 className="mb-16 text-center font-serif text-4xl md:text-5xl text-[#2D2A26]">
-          How Solance works
+          How Vozranow works
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
@@ -125,7 +125,7 @@ function ScreenStep1() {
         <User size={32} className="text-[#5C5954]" />
       </div>
       <div>
-        <h4 className="text-xl font-medium text-[#2D2A26]">Welcome to Solance</h4>
+        <h4 className="text-xl font-medium text-[#2D2A26]">Welcome to Vozranow</h4>
         <p className="text-sm text-[#5C5954]">Create your private account.</p>
       </div>
       <div className="w-full max-w-xs space-y-3">

@@ -37,7 +37,7 @@ export default function Navbar() {
         {/* --- 1. The Logo (Mature, Serif, Icon-free) --- */}
         <div className="flex items-center">
           <a href="/" className="font-serif text-3xl tracking-tight text-[#2D2A26] hover:opacity-80 transition-opacity">
-            Solance<span className="text-[#8C877D]">.</span>
+            Vozranow<span className="text-[#8C877D]">.</span>
           </a>
         </div>
 
@@ -220,7 +220,7 @@ const communityLinks = [
   { 
     title: 'Our Mission', 
     href: '/about', 
-    description: 'The story behind Solance.' 
+    description: 'The story behind Vozranow.' 
   },
   { 
     title: 'Safety & Trust', 

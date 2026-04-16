@@ -73,7 +73,7 @@ const ResetPasswordPage = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[#173F3A]/30 to-[#173F3A]/90" />
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
-           <div className="font-serif text-3xl font-bold tracking-tight">Solance.</div>
+           <div className="font-serif text-3xl font-bold tracking-tight">Vozranow.</div>
            <div className="space-y-6 max-w-md">
               <blockquote className="font-serif text-4xl leading-tight">
                 "Every fresh beginning comes from some other beginning's end."

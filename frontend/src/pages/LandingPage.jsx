@@ -48,7 +48,7 @@ const LandingPage = () => {
         {/* Branding & Text */}
         <div className="text-center relative z-10 flex flex-col items-center">
           <h2 className="font-serif text-2xl text-[#173F3A] tracking-[0.25em] mb-3 ml-1">
-            SOLANCE
+            Vozranow
           </h2>
           <div className="flex items-center gap-1 text-sm font-medium text-[#8C877D] tracking-wide opacity-80 animate-pulse" style={{ animationDuration: '2s' }}>
             Preparing your space...

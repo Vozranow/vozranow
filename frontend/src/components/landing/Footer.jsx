@@ -106,7 +106,7 @@ export default function Footer() {
               
               {/* Logo */}
               <div className="flex items-center gap-2 font-serif text-2xl tracking-tight text-white">
-                Solance.
+                Vozranow.
               </div>
 
               {/* Social Icons */}
@@ -118,7 +118,7 @@ export default function Footer() {
 
               {/* Copyright */}
               <div className="text-xs text-[#8FAFA9]">
-                © 2024 Solance. All rights reserved.
+                © 2024 Vozranow. All rights reserved.
               </div>
             </div>
 
