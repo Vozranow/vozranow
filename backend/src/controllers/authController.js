@@ -60,16 +60,16 @@ export const verifyOtp = async (req, res) => {
     // 4. Set the Access Token Cookie
     res.cookie("accessToken", tokens.accessToken, {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 5 * 60 * 1000, // 5 minutes
     });
 
     // 5. Set the Refresh Token Cookie
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -119,16 +119,16 @@ export const loginUser = async (req, res) => {
     // Set Access Token Cookie
     res.cookie("accessToken", tokens.accessToken, {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true, // Must be true for sameSite: "none"
+      sameSite: "none", // Allows cross-origin/cross-scheme cookies
       maxAge: 5 * 60 * 1000, // 5 min
     });
 
     // Set Refresh Token Cookie
     res.cookie("refreshToken", tokens.refreshToken, {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -182,8 +182,8 @@ export const refreshAccessToken = (req, res) => {
 
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 5 * 60 * 1000, // 5 min
     });
 
@@ -193,8 +193,8 @@ export const refreshAccessToken = (req, res) => {
 
   } catch (error) {
     // Invalid / expired refresh token
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", { secure: true, sameSite: "none", httpOnly: true });
+    res.clearCookie("refreshToken", { secure: true, sameSite: "none", httpOnly: true });
     console.log(error);
     return res.status(401).json({
       message: "Session expired. Please log in again.",  //if refresh token has expired itself then we do this.
@@ -208,14 +208,14 @@ export const logoutUser = async (req, res) => {
   try {
     res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
     });
 
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: ENV.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
     });
 
     return res.status(200).json({
@@ -258,8 +258,8 @@ export const resetPassword = async (req, res) => {
 
     // Service succeeded, user's password is changed. 
     // Now we force them to log in again by clearing their current session cookies.
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", { secure: true, sameSite: "none", httpOnly: true });
+    res.clearCookie("refreshToken", { secure: true, sameSite: "none", httpOnly: true });
 
     return res.status(result.statusCode).json(result.data);
 

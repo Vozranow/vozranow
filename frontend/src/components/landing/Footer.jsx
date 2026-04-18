@@ -93,8 +93,8 @@ export default function Footer() {
               <div className="space-y-6">
                 <h4 className="font-serif text-xl text-white">Legal</h4>
                 <ul className="space-y-3 text-[#BCCECE] text-sm md:text-base">
-                  <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                  <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                  <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
                   <li><a href="#" className="hover:text-white transition-colors">Cookie Preferences</a></li>
                 </ul>
               </div>
@@ -118,7 +118,7 @@ export default function Footer() {
 
               {/* Copyright */}
               <div className="text-xs text-[#8FAFA9]">
-                © 2024 Vozranow. All rights reserved.
+                © 2026 Vozranow. All rights reserved.
               </div>
             </div>
 

@@ -4,12 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { 
   Calendar, Clock, CheckCircle2, AlertCircle, 
   ArrowRight, ShieldCheck, Heart, UserCheck, Loader2, ArrowLeft,
-  AlertTriangle, Sparkles
+  AlertTriangle, Sparkles, CreditCard
 } from "lucide-react";
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 
-// 🟢 NEW: Updated Config
 const ALL_PLANS = [
   { id: "5", duration: 5, price: 0, name: "Free Trial", desc: "First 5 minutes free to try.", isTrial: true },
   { id: "10", duration: 10, price: 100, name: "Quick Check-in", desc: "A brief 10-minute check-in." },
@@ -21,7 +20,7 @@ const SessionBookingPage = () => {
   const navigate = useNavigate();
   
   // State for Booking
-  const [selectedPlan, setSelectedPlan] = useState(null); // Set dynamically after fetch
+  const [selectedPlan, setSelectedPlan] = useState(null); 
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -29,7 +28,7 @@ const SessionBookingPage = () => {
 
   // State for User Data
   const [walletBalance, setWalletBalance] = useState(0);
-  const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false); // 🟢 NEW State
+  const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false); 
   const [fetchingUser, setFetchingUser] = useState(true);
 
   // Professional Inline Alert State
@@ -44,7 +43,6 @@ const SessionBookingPage = () => {
         setWalletBalance(user.walletBalance);
         setHasUsedFreeTrial(user.hasUsedFreeTrial || false);
 
-        // 🟢 Default Selection: Select 5 min if available, otherwise 15 min
         if (user.hasUsedFreeTrial) {
           setSelectedPlan(ALL_PLANS.find(p => p.id === "15"));
         } else {
@@ -87,7 +85,6 @@ const SessionBookingPage = () => {
       
       if (endDateTime <= startDateTime) throw new Error("End time must be after start time.");
 
-      // 🟢 NEW: Wallet Check ONLY if price is greater than 0
       if (selectedPlan.price > 0 && walletBalance < selectedPlan.price) {
         setAlert({ type: "error", text: "Insufficient Balance. Redirecting to top-up..." });
         setTimeout(() => navigate("/add-money"), 1500);
@@ -117,208 +114,247 @@ const SessionBookingPage = () => {
     }
   };
 
-  // 🟢 Filter out the trial plan if they've used it
   const visiblePlans = ALL_PLANS.filter(plan => !(plan.isTrial && hasUsedFreeTrial));
 
   return (
-    <div className="min-h-screen bg-[#FDFCF8] pb-12">
+    // 🟢 NEW: Using a slightly richer background so the white cards pop.
+    <div className="min-h-screen bg-[#F4F7F6] pb-12 font-sans selection:bg-[#173F3A] selection:text-white">
       
       {/* 1. Hero Header */}
-      <div className="bg-[#173F3A] text-white pt-8 pb-24 rounded-b-[3rem] px-6 relative overflow-hidden">
+      <div className="bg-[#173F3A] text-white pt-20 pb-32 px-6 relative overflow-hidden">
         
-        <div className="max-w-4xl mx-auto relative z-20 mb-6">
-          <button 
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-2 text-sm font-medium text-[#A3C6C0] hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10 w-fit"
-          >
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
-        </div>
+        {/* 🟢 NEW: Proper Button styling, absolutely positioned to top left */}
+        <button 
+          onClick={() => navigate("/dashboard")}
+          className="absolute top-6 left-6 md:left-10 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-full text-white text-sm font-medium transition-all shadow-sm z-30"
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
 
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#A3C6C0]/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
+        {/* Abstract Background Elements */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-[80px]"></div>
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#A3C6C0]/10 rounded-full translate-y-1/3 -translate-x-1/4 blur-[60px]"></div>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-3xl md:text-4xl font-serif mb-3">Book Your Session</h1>
-          <p className="text-[#A3C6C0] max-w-lg mx-auto text-sm md:text-base leading-relaxed">
-            Take a step towards healing. Choose a plan and let us match you with the perfect listener for your needs.
-          </p>
+        <div className="max-w-6xl mx-auto relative z-10">
+          <div className="max-w-2xl">
+            <h1 className="text-4xl md:text-5xl font-serif mb-4 tracking-tight">Book Your Session</h1>
+            <p className="text-[#A3C6C0] text-base md:text-lg leading-relaxed max-w-xl">
+              Take a step towards healing. Choose a duration that feels right for you today, and we'll connect you with the perfect listener.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 -mt-16 relative z-20 space-y-8">
-        
-        {/* 2. Step 1: Choose Plan */}
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-200/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-[#E8F4F1] p-2 rounded-full text-[#173F3A]"><CheckCircle2 size={20}/></div>
-            <h2 className="text-xl font-bold text-gray-800">1. Choose a Plan</h2>
-          </div>
-
-          {fetchingUser ? (
-            <div className="flex justify-center py-8"><Loader2 className="animate-spin text-[#173F3A]" size={32}/></div>
-          ) : (
-            // 🟢 Dynamic Grid: Adjusts beautifully whether there are 3 or 4 plans visible
-            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${visiblePlans.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
-              {visiblePlans.map((plan) => (
-                <div 
-                  key={plan.id}
-                  onClick={() => setSelectedPlan(plan)}
-                  className={`cursor-pointer rounded-2xl p-5 border-2 transition-all duration-300 relative overflow-hidden group flex flex-col ${
-                    selectedPlan?.id === plan.id 
-                      ? "border-[#173F3A] bg-[#F0F7F5] shadow-md transform scale-[1.02]" 
-                      : "border-gray-100 bg-white hover:border-[#A3C6C0] hover:shadow-sm"
-                  }`}
-                >
-                  {/* Badge & Selection Ring */}
-                  {plan.isTrial && (
-                    <span className="absolute top-3 left-3 bg-emerald-100 text-emerald-700 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <Sparkles size={10} /> Free Trial
-                    </span>
-                  )}
-                  {selectedPlan?.id === plan.id && (
-                    <div className="absolute top-3 right-3 text-[#173F3A]"><CheckCircle2 size={18} fill="#173F3A" color="white" /></div>
-                  )}
-
-                  <div className={`mt-${plan.isTrial ? '6' : '0'}`}>
-                    <h3 className="font-bold text-gray-800 text-lg">{plan.duration} Mins</h3>
-                    <p className="text-xs text-gray-500 mt-1 flex-1">{plan.desc}</p>
-                    <div className="mt-4 flex items-baseline gap-1">
-                      {plan.price === 0 ? (
-                        <span className="text-2xl font-serif text-emerald-600">Free</span>
-                      ) : (
-                        <>
-                          <span className="text-2xl font-serif text-[#173F3A]">₹{plan.price}</span>
-                          <span className="text-xs text-gray-400">/ session</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+      {/* 🟢 NEW: Two-Column Layout */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* LEFT COLUMN: Plan Selection */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-[#E8E6E1]">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="bg-[#E8F4F1] p-2.5 rounded-xl text-[#173F3A]"><CheckCircle2 size={20} strokeWidth={2.5}/></div>
+                <div>
+                  <h2 className="text-xl font-bold text-[#2D2A26]">Select a Duration</h2>
+                  <p className="text-sm text-[#8C877D]">How much time do you need?</p>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 3. Step 2: Schedule Time */}
-        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-200/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="bg-[#E8F4F1] p-2 rounded-full text-[#173F3A]"><Clock size={20}/></div>
-            <h2 className="text-xl font-bold text-gray-800">2. Preferred Time</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Select Date</label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input 
-                  type="date" 
-                  min={new Date().toISOString().split("T")[0]} 
-                  value={date}
-                  onChange={(e) => {
-                    setDate(e.target.value);
-                    setAlert({ type: "", text: "" });
-                  }}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] outline-none transition-all cursor-pointer"
-                />
               </div>
-            </div>
 
-            <div className="space-y-2">
-               <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">Preferred Window (2-3 Hours)</label>
-               <div className="flex items-center gap-2">
-                 <input 
-                   type="time" 
-                   value={startTime}
-                   onChange={(e) => {
-                     setStartTime(e.target.value);
-                     setAlert({ type: "", text: "" });
-                   }}
-                   className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#173F3A] outline-none transition-all cursor-pointer"
-                 />
-                 <span className="text-gray-400 font-medium">to</span>
-                 <input 
-                   type="time" 
-                   value={endTime}
-                   onChange={(e) => {
-                     setEndTime(e.target.value);
-                     setAlert({ type: "", text: "" });
-                   }}
-                   className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#173F3A] outline-none transition-all cursor-pointer"
-                 />
-               </div>
-               <p className="text-[10px] text-amber-600 mt-1 flex items-center gap-1">
-                 <AlertCircle size={10} /> Must be between 8:00 AM - 11:59 PM
-               </p>
+              {fetchingUser ? (
+                <div className="flex justify-center py-12"><Loader2 className="animate-spin text-[#173F3A]" size={32}/></div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {visiblePlans.map((plan) => (
+                    <div 
+                      key={plan.id}
+                      onClick={() => setSelectedPlan(plan)}
+                      className={`cursor-pointer rounded-2xl p-6 border-2 transition-all duration-300 relative overflow-hidden group flex flex-col ${
+                        selectedPlan?.id === plan.id 
+                          ? "border-[#173F3A] bg-[#F0F7F5] shadow-md transform scale-[1.02]" 
+                          : "border-[#E8E6E1] bg-white hover:border-[#A3C6C0] hover:shadow-sm"
+                      }`}
+                    >
+                      {plan.isTrial && (
+                        <span className="absolute top-4 left-4 bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1.5">
+                          <Sparkles size={12} /> Free Trial
+                        </span>
+                      )}
+                      
+                      <div className="absolute top-4 right-4">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selectedPlan?.id === plan.id ? 'border-[#173F3A] bg-[#173F3A]' : 'border-gray-300 bg-transparent'}`}>
+                          {selectedPlan?.id === plan.id && <CheckCircle2 size={12} className="text-white" strokeWidth={4} />}
+                        </div>
+                      </div>
+
+                      <div className={`mt-${plan.isTrial ? '8' : '2'}`}>
+                        <h3 className="font-bold text-[#2D2A26] text-xl mb-1">{plan.duration} Mins</h3>
+                        <p className="text-sm text-[#8C877D] flex-1">{plan.desc}</p>
+                        
+                        <div className="mt-6 pt-4 border-t border-black/5 flex items-baseline gap-1">
+                          {plan.price === 0 ? (
+                            <span className="text-2xl font-serif text-emerald-600">Free</span>
+                          ) : (
+                            <>
+                              <span className="text-2xl font-serif text-[#173F3A]">₹{plan.price}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {selectedPlan && (
-            <div className="mt-8 mb-6 bg-[#F8FAFC] rounded-xl p-4 flex justify-between items-center border border-gray-100">
-               <div className="flex items-center gap-3">
-                  <div className="bg-white p-2 rounded-full shadow-sm text-[#173F3A]"><ShieldCheck size={18}/></div>
-                  <div>
-                     <p className="text-xs text-gray-500">Wallet Balance</p>
-                     {fetchingUser ? (
-                        <div className="h-5 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
-                     ) : (
-                        <p className="font-bold text-gray-800">₹{walletBalance}</p>
-                     )}
+          {/* RIGHT COLUMN: Time & Checkout */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-[#E8E6E1] lg:sticky lg:top-8">
+              
+              <div className="flex items-center gap-3 mb-8">
+                <div className="bg-[#E8F4F1] p-2.5 rounded-xl text-[#173F3A]"><Clock size={20} strokeWidth={2.5}/></div>
+                <div>
+                  <h2 className="text-xl font-bold text-[#2D2A26]">Schedule</h2>
+                  <p className="text-sm text-[#8C877D]">When are you free?</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-[#5C5954] uppercase tracking-wide">Date</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C877D]" size={18} />
+                    <input 
+                      type="date" 
+                      min={new Date().toISOString().split("T")[0]} 
+                      value={date}
+                      onChange={(e) => { setDate(e.target.value); setAlert({ type: "", text: "" }); }}
+                      className="w-full pl-12 pr-4 py-3.5 bg-[#F8FAFC] border border-[#E8E6E1] rounded-xl text-[#2D2A26] font-medium focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] outline-none transition-all cursor-pointer"
+                    />
                   </div>
-               </div>
-               <div className="text-right">
-                  <p className="text-xs text-gray-500">Session Cost</p>
-                  <p className={`font-bold text-lg ${selectedPlan.price === 0 ? 'text-emerald-600' : 'text-[#173F3A]'}`}>
-                    {selectedPlan.price === 0 ? '₹0 (Free)' : `- ₹${selectedPlan.price}`}
+                  <p className="text-[11px] text-amber-600 mt-1.5 flex items-center gap-1 font-medium bg-amber-50 w-fit px-2 py-0.5 rounded-md">
+                     <AlertCircle size={12} /> Book at least 6 hours in advance
                   </p>
-               </div>
-            </div>
-          )}
+                </div>
 
-          {/* Professional Inline Alert Box */}
-          {alert.text && (
-            <div className={`mb-6 p-4 rounded-xl flex items-start gap-3 border ${
-              alert.type === "error" 
-                ? "bg-red-50 border-red-100 text-red-700" 
-                : "bg-emerald-50 border-emerald-100 text-emerald-700"
-            }`}>
-              {alert.type === "error" ? (
-                <AlertTriangle className="shrink-0 mt-0.5" size={18} />
-              ) : (
-                <CheckCircle2 className="shrink-0 mt-0.5" size={18} />
+                <div className="space-y-2">
+                   <label className="text-xs font-bold text-[#5C5954] uppercase tracking-wide">Time Window (2-3 Hrs)</label>
+                   <div className="flex items-center gap-3">
+                     <input 
+                       type="time" 
+                       value={startTime}
+                       onChange={(e) => { setStartTime(e.target.value); setAlert({ type: "", text: "" }); }}
+                       className="flex-1 px-4 py-3.5 bg-[#F8FAFC] border border-[#E8E6E1] rounded-xl text-[#2D2A26] font-medium focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] outline-none transition-all cursor-pointer"
+                     />
+                     <span className="text-[#8C877D] font-medium">to</span>
+                     <input 
+                       type="time" 
+                       value={endTime}
+                       onChange={(e) => { setEndTime(e.target.value); setAlert({ type: "", text: "" }); }}
+                       className="flex-1 px-4 py-3.5 bg-[#F8FAFC] border border-[#E8E6E1] rounded-xl text-[#2D2A26] font-medium focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A] outline-none transition-all cursor-pointer"
+                     />
+                   </div>
+                </div>
+              </div>
+
+              <hr className="my-8 border-[#E8E6E1]" />
+
+              {/* Checkout Summary */}
+              {selectedPlan && (
+                <div className="bg-[#F8FAFC] rounded-2xl p-5 border border-[#E8E6E1] mb-6 space-y-4">
+                   <div className="flex justify-between items-center text-sm">
+                     <span className="text-[#8C877D] font-medium">Session Duration</span>
+                     <span className="font-bold text-[#2D2A26]">{selectedPlan.duration} Mins</span>
+                   </div>
+                   <div className="flex justify-between items-center text-sm">
+                     <span className="text-[#8C877D] font-medium">Session Cost</span>
+                     <span className={`font-bold ${selectedPlan.price === 0 ? 'text-emerald-600' : 'text-[#2D2A26]'}`}>
+                       {selectedPlan.price === 0 ? 'Free' : `₹${selectedPlan.price}`}
+                     </span>
+                   </div>
+                   
+                   <div className="pt-4 border-t border-[#E8E6E1] flex justify-between items-center">
+                     <div className="flex items-center gap-2 text-[#173F3A]">
+                        <CreditCard size={18} />
+                        <span className="text-sm font-bold">Wallet Balance</span>
+                     </div>
+                     {fetchingUser ? (
+                        <div className="h-5 w-16 bg-gray-200 animate-pulse rounded"></div>
+                     ) : (
+                        <span className="font-bold text-[#2D2A26]">₹{walletBalance}</span>
+                     )}
+                   </div>
+                </div>
               )}
-              <p className="text-sm font-medium leading-relaxed">{alert.text}</p>
+
+              {alert.text && (
+                <div className={`mb-6 p-4 rounded-xl flex items-start gap-3 border ${
+                  alert.type === "error" ? "bg-red-50 border-red-100 text-red-700" : "bg-emerald-50 border-emerald-100 text-emerald-700"
+                }`}>
+                  {alert.type === "error" ? <AlertTriangle className="shrink-0 mt-0.5" size={18} /> : <CheckCircle2 className="shrink-0 mt-0.5" size={18} />}
+                  <p className="text-sm font-medium leading-relaxed">{alert.text}</p>
+                </div>
+              )}
+
+              <button 
+                onClick={handleBooking}
+                disabled={bookingLoading || fetchingUser || !selectedPlan}
+                className="w-full py-4 bg-[#173F3A] text-white rounded-xl font-bold text-lg hover:bg-[#0F2926] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg shadow-[#173F3A]/20"
+              >
+                {bookingLoading ? <Loader2 className="animate-spin" /> : (
+                  <>Confirm Request <ArrowRight size={20} /></>
+                )}
+              </button>
             </div>
-          )}
+          </div>
 
-          <button 
-            onClick={handleBooking}
-            disabled={bookingLoading || fetchingUser || !selectedPlan}
-            className="w-full py-4 bg-[#173F3A] text-white rounded-xl font-bold text-lg hover:bg-[#0F2926] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-lg shadow-[#173F3A]/20"
-          >
-            {bookingLoading ? <Loader2 className="animate-spin" /> : (
-              <>Confirm Request <ArrowRight size={20} /></>
-            )}
-          </button>
         </div>
+        
+        {/* 4. "How it Works" - Timeline (Unchanged, beautifully centered at bottom) */}
+        <div className="mt-20 pt-10 border-t border-[#E8E6E1]">
+           <div className="text-center mb-12">
+             <h3 className="font-serif text-3xl text-[#2D2A26]">How it works</h3>
+             <p className="text-sm md:text-base text-[#8C877D] mt-2">A simple, transparent path to your healing space.</p>
+           </div>
+           
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative max-w-4xl mx-auto">
+              <div className="hidden md:block absolute top-6 left-[16%] right-[16%] h-[1px] bg-[#E8E6E1] z-0"></div>
 
-        {/* 4. "How it Works" */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8 pb-12">
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center space-y-3">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto"><UserCheck size={24} /></div>
-              <h3 className="font-bold text-gray-800">1. You Request</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">Select your preferred date and a 2-3 hour window where you are free.</p>
-           </div>
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center space-y-3">
-              <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mx-auto"><ShieldCheck size={24} /></div>
-              <h3 className="font-bold text-gray-800">2. We Match</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">Our admin assigns the best available listener for your specific time slot.</p>
-           </div>
-           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center space-y-3">
-              <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto"><Heart size={24} /></div>
-              <h3 className="font-bold text-gray-800">3. Healing Begins</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">You get a notification with the confirmed time and meeting link.</p>
+              <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                 <div className="w-12 h-12 bg-white border border-[#E8E6E1] text-[#173F3A] rounded-full flex items-center justify-center shadow-sm">
+                   <UserCheck size={20} strokeWidth={1.5} />
+                 </div>
+                 <div>
+                   <h4 className="font-bold text-[#2D2A26] text-base">1. You Request</h4>
+                   <p className="text-sm text-[#8C877D] leading-relaxed mt-2 max-w-[220px] mx-auto">
+                     Select a date and a 2-3 hour window. Must be booked at least 6 hours in advance.
+                   </p>
+                 </div>
+              </div>
+
+              <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                 <div className="w-12 h-12 bg-white border border-[#E8E6E1] text-[#173F3A] rounded-full flex items-center justify-center shadow-sm">
+                   <ShieldCheck size={20} strokeWidth={1.5} />
+                 </div>
+                 <div>
+                   <h4 className="font-bold text-[#2D2A26] text-base">2. We Match</h4>
+                   <p className="text-sm text-[#8C877D] leading-relaxed mt-2 max-w-[220px] mx-auto">
+                     Our admin carefully assigns the best available listener for your specific time slot.
+                   </p>
+                 </div>
+              </div>
+
+              <div className="relative z-10 flex flex-col items-center text-center space-y-4">
+                 <div className="w-12 h-12 bg-[#173F3A] text-white border-2 border-white rounded-full flex items-center justify-center shadow-md shadow-[#173F3A]/20">
+                   <Heart size={20} strokeWidth={1.5} />
+                 </div>
+                 <div>
+                   <h4 className="font-bold text-[#2D2A26] text-base">3. Healing Begins</h4>
+                   <p className="text-sm text-[#8C877D] leading-relaxed mt-2 max-w-[220px] mx-auto">
+                     You get a notification with the confirmed time and your assigned listener's details.
+                   </p>
+                 </div>
+              </div>
            </div>
         </div>
 

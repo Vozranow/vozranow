@@ -35,7 +35,15 @@ export const applyForSession = async (userId, data) => {
     };
   }
 
-  // 2. Production Check: Must book at least 12 hours in advance
+  // 2. Production Check: Must book at least 6 hours in advance
+  const sixHoursInMs = 6 * 60 * 60 * 1000;
+  if (windowStart.getTime() - now.getTime() < sixHoursInMs) {
+    return { 
+      success: false, 
+      statusCode: 400, 
+      message: "Sessions must be booked at least 6 hours in advance." 
+    };
+  }
 
   // 3. Validate window logic (Duration & Midnight Rollover)
   

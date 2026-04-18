@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
 import axiosInstance from "../utils/axiosInstance";
 import API_PATHS from "../utils/apiPaths";
-import { useAuth } from "../context/useAuth.js"; // Adjusted path based on typical structure
+import { useAuth } from "../context/useAuth.js";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ const LoginPage = () => {
     let timeout;
     if (isAuthenticated) {
       timeout = setTimeout(() => {
-        // You can leave this out if you rely on ProtectedRoute to redirect logged in users correctly
+        
         navigate("/dashboard"); 
       }, 1000);
     }
@@ -85,14 +85,14 @@ const LoginPage = () => {
       {/* Hidden on mobile, visible on large screens */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[#173F3A]">
         {/* Background Image */}
-        {/* <img 
-          src="https://images.unsplash.com/photo-1620912189868-38f0743b1c6d?q=80&w=2000&auto=format&fit=crop" 
+        <img 
+          src="monstera-leaves-nature-background-wallpaper.jpg" 
           alt="Calm leaves shadow" 
-          className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
-        /> */}
+          className="absolute inset-0 h-full w-full object-cover opacity-90"
+        />
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#173F3A]/40 to-[#173F3A]/90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#173F3A] via-[#173F3A]/60 to-transparent" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">

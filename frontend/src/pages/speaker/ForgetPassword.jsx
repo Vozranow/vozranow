@@ -37,14 +37,14 @@ const ForgotPasswordPage = () => {
       
       {/* --- LEFT SIDE: Visual (Calm Aesthetic) --- */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[#173F3A]">
-        {/* <img 
-          src="https://images.unsplash.com/photo-1502421898236-81534f59795b?q=80&w=1974&auto=format&fit=crop" 
+        <img 
+          src="drops-leaves-after-rain-forest-dark-light_644339-15.avif" 
           alt="Foggy forest path" 
-          className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
-        /> */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#173F3A]/30 to-[#173F3A]/90" />
+          className="absolute inset-0 h-full w-full object-cover opacity-90"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#173F3A] via-[#173F3A]/60 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
-           <div className="font-serif text-3xl font-bold tracking-tight">Solance.</div>
+           <div className="font-serif text-3xl font-bold tracking-tight">Vozranow.</div>
            <div className="space-y-6 max-w-md">
               <blockquote className="font-serif text-4xl leading-tight">
                 "Hope is being able to see that there is light despite all of the darkness."
