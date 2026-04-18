@@ -322,23 +322,23 @@ const SignupPage = () => {
 
       {/* --- RIGHT SIDE: Visual (Swapped) --- */}
       <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[#173F3A] animate-in slide-in-from-right-10 duration-700 fade-in">
-        {/* <img 
-          src="https://images.unsplash.com/photo-1499244571973-2e2e80326ad1?q=80&w=1974&auto=format&fit=crop" 
+        <img 
+          src="Gemini_Generated_Image_ugirk3ugirk3ugir.png" 
           alt="Peaceful horizon" 
-          className="absolute inset-0 h-full w-full object-cover opacity-60 mix-blend-overlay"
-        /> */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#173F3A]/30 to-[#173F3A]/90" />
+          className="absolute inset-0 h-full w-full object-cover opacity-90"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#173F3A] via-[#173F3A]/60 to-transparent" />
         <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
-           <div className="flex justify-end">
+           <div className="flex justify-start">
               <div className="font-serif text-3xl font-bold tracking-tight">Vozranow.</div>
            </div>
-           <div className="space-y-6 max-w-md ml-auto text-right">
+           <div className="space-y-6 max-w-md">
               <blockquote className="font-serif text-4xl leading-tight">
                 "It is never too late to be what you might have been."
               </blockquote>
               <cite className="block text-lg font-light opacity-80 not-italic">— George Eliot</cite>
            </div>
-           <div className="text-sm opacity-60 text-right">© 2026 Vozranow. All rights reserved.</div>
+           <div className="text-sm opacity-60">© 2026 Vozranow. All rights reserved.</div>
         </div>
       </div>
 

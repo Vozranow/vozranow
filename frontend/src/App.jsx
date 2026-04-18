@@ -26,6 +26,10 @@ import ManagerSessionLogs from './pages/manager/ManagerSessionLogs.jsx'
 import ManagerAssignSession from './pages/manager/ManagerAssignSession.jsx'
 import ManagerDisputes from './pages/manager/ManagerDisputes.jsx'
 import ManagerDirectory from './pages/manager/ManagerDirectory.jsx'
+import TermsAndConditions from './pages/TermsAndConditions.jsx'
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx'
+import RefundPolicy from './pages/RefundPolicy.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 
 function App() {
   console.log(ENV.BACKEND_URL);
@@ -46,6 +50,10 @@ function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route path="/register" element={<SignupPage />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/refund" element={<RefundPolicy />} />
+      
 
       {/* ===== Protected Routes ===== */}
       <Route element={<ProtectedRoute allowedRoles={['user']}/>}>
@@ -81,6 +89,8 @@ function App() {
           <Route path="/manager/disputes" element={<ManagerDisputes />} />
           <Route path="/manager/directory" element={<ManagerDirectory />} />
         </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
 
     </Routes>
     </>
