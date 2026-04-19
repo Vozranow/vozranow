@@ -1,14 +1,14 @@
 'use client';
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Mail, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import axiosInstance from "../../utils/axiosInstance";
 import API_PATHS from "../../utils/apiPaths";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState({ type: "", message: "" }); // type: 'success' | 'error'
+  const [status, setStatus] = useState({ type: "", message: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,15 +17,11 @@ const ForgotPasswordPage = () => {
 
     try {
       const res = await axiosInstance.post(API_PATHS.AUTH.FORGOT_PASSWORD, { email });
-      // Backend returns: "If the email exists, a reset link has been sent"
-      setStatus({ 
-        type: "success", 
-        message: res.data.message 
-      });
+      setStatus({ type: "success", message: res.data.message });
     } catch (err) {
-      setStatus({ 
-        type: "error", 
-        message: err.response?.data?.message || "Something went wrong. Please try again." 
+      setStatus({
+        type: "error",
+        message: err.response?.data?.message || "Something went wrong."
       });
     } finally {
       setLoading(false);
@@ -33,104 +29,127 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-[#FDFCF8] overflow-hidden">
-      
-      {/* --- LEFT SIDE: Visual (Calm Aesthetic) --- */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-[#173F3A]">
-        <img 
-          src="drops-leaves-after-rain-forest-dark-light_644339-15.avif" 
-          alt="Foggy forest path" 
-          className="absolute inset-0 h-full w-full object-cover opacity-90"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#173F3A] via-[#173F3A]/60 to-transparent" />
-        <div className="relative z-10 flex flex-col justify-between h-full p-16 text-[#E5F0EE]">
-           <div className="font-serif text-3xl font-bold tracking-tight">Vozranow.</div>
-           <div className="space-y-6 max-w-md">
-              <blockquote className="font-serif text-4xl leading-tight">
-                "Hope is being able to see that there is light despite all of the darkness."
-              </blockquote>
-              <cite className="block text-lg font-light opacity-80 not-italic">— Desmond Tutu</cite>
-           </div>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+
+      {/* ✅ Background Image */}
+      <div className="absolute inset-0 bg-[url('/login-background.jpg')] bg-cover bg-center" />
+
+      {/* Optional overlay */}
+      <div className="absolute inset-0 bg-black/40" />
+
+      {/* Glass Card */}
+      <div className="relative z-10 w-full max-w-md p-10 rounded-3xl 
+        bg-white/10 backdrop-blur-2xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-semibold text-white">
+            Forgot password
+          </h1>
+          <p className="text-gray-300 text-sm mt-2">
+            We’ll send you a reset link
+          </p>
         </div>
-      </div>
 
-      {/* --- RIGHT SIDE: The Form --- */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 sm:p-12 relative">
-        <div className="w-full max-w-md space-y-8">
-          
-          <div className="text-center lg:text-left space-y-2">
-            <h1 className="font-serif text-4xl text-[#2D2A26]">Forgot password?</h1>
-            <p className="text-[#5C5954]">
-              Don't worry, it happens. We'll send you a link to reset it.
-            </p>
-          </div>
+        {/* SUCCESS */}
+        {status.type === "success" ? (
+          <div className="text-center space-y-4">
 
-          {/* Success State */}
-          {status.type === 'success' ? (
-            <div className="rounded-xl bg-[#E8F4F1] p-6 text-center space-y-4 border border-[#3A6B48]/20">
-               <div className="h-12 w-12 bg-[#3A6B48] rounded-full flex items-center justify-center mx-auto text-white">
-                  <Mail size={24} />
-               </div>
-               <h3 className="text-[#173F3A] font-serif text-xl">Check your inbox</h3>
-               <p className="text-[#5C5954] text-sm">
-                 {status.message}
-               </p>
-               <div className="pt-4">
-                  <Link to="/login" className="text-[#173F3A] font-semibold hover:underline flex items-center justify-center gap-2">
-                    <ArrowLeft size={16} /> Back to Login
-                  </Link>
-               </div>
+            <div className="w-14 h-14 bg-white/10 border border-white/10 rounded-xl flex items-center justify-center mx-auto">
+              <Mail size={22} className="text-white" />
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#2D2A26]" htmlFor="email">Email address</label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8C877D]">
-                    <Mail size={18} />
-                  </div>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-xl border border-[#E8E6E1] bg-white py-3 pl-10 pr-4 text-[#2D2A26] placeholder-[#8C877D] outline-none focus:border-[#173F3A] focus:ring-1 focus:ring-[#173F3A]"
-                  />
-                </div>
+
+            <h3 className="text-lg font-medium text-white">
+              Check your inbox
+            </h3>
+
+            <p className="text-sm text-gray-300">
+              {status.message}
+            </p>
+
+            <Link
+              to="/login"
+              className="block mt-4 text-white font-medium hover:underline"
+            >
+              ← Back to login
+            </Link>
+          </div>
+        ) : (
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* Email */}
+            <input
+              type="email"
+              required
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input"
+            />
+
+            {/* Error */}
+            {status.type === "error" && (
+              <div className="text-red-400 text-sm">
+                {status.message}
               </div>
+            )}
 
-              {status.type === 'error' && (
-                <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
-                  {status.message}
-                </div>
-              )}
+            {/* Button */}
+            <button className="primary-btn">
+              {loading ? "Sending..." : "Send reset link"}
+            </button>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="group relative w-full overflow-hidden rounded-xl bg-[#173F3A] py-3.5 text-white shadow-lg transition-all hover:bg-[#0F2926] disabled:opacity-70"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2 font-medium">
-                  {loading ? (
-                    <><Loader2 size={18} className="animate-spin" /> Sending...</>
-                  ) : (
-                    <>Send Link <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></>
-                  )}
-                </span>
-              </button>
+            {/* Back */}
+            <Link
+              to="/login"
+              className="block text-center text-sm text-gray-300 hover:text-white"
+            >
+              ← Back to login
+            </Link>
 
-              <div className="text-center">
-                <Link to="/login" className="text-sm font-medium text-[#5C5954] hover:text-[#173F3A] transition-colors flex items-center justify-center gap-2">
-                   <ArrowLeft size={16} /> Back to Login
-                </Link>
-              </div>
-            </form>
-          )}
-
-        </div>
+          </form>
+        )}
       </div>
+
+      {/* Styles */}
+      <style jsx>{`
+        .input {
+          width: 100%;
+          padding: 14px 16px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: white;
+          transition: all 0.25s ease;
+        }
+
+        .input::placeholder {
+          color: rgba(255,255,255,0.4);
+        }
+
+        .input:focus {
+          outline: none;
+          border-color: rgba(163,198,192,0.6);
+          box-shadow: 0 0 0 2px rgba(163,198,192,0.2);
+          background: rgba(255,255,255,0.12);
+        }
+
+        .primary-btn {
+          width: 100%;
+          padding: 14px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #A3C6C0, #6FAEA6);
+          color: #0F2F2B;
+          font-weight: 600;
+          transition: all 0.25s ease;
+        }
+
+        .primary-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+      `}</style>
     </div>
   );
 };
