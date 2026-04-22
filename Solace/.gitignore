@@ -1,0 +1,12 @@
+node_modules
+.env
+notes.txt
+notes2.txt
+text.txt
+notesfrontend.txt
+notesbackend.txt
+stressTest.js
+controllers.txt
+tests
+.env.test
+r2-test.js

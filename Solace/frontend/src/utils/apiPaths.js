@@ -1,0 +1,89 @@
+const API_PATHS = {
+
+  AUTH: {
+    REGISTER: "/api/auth/register",
+    VERIFY_OTP: "/api/auth/verify",
+    RESEND_OTP: "/api/auth/resend-otp",
+    LOGIN: "/api/auth/login",
+    LOGOUT: "/api/auth/logout",
+    REFRESH: "/api/auth/refresh",
+    FORGOT_PASSWORD: "/api/auth/forgot-pass",
+    RESET_PASSWORD: "/api/auth/reset-pass",
+    
+
+    GET_PROFILE: "/api/auth/getProfile",
+    UPDATE_PROFILE: "/api/auth/update-prof",
+    VERIFY_EMAIL_CHANGE: "/api/auth/verify-email-change",
+    
+
+    REGISTER_LISTENER: "/api/auth/register-listener",
+  },
+
+
+  ADMIN: {
+    GET_REQUESTS: "/api/admin/requests", 
+    FIND_LISTENERS: (sessionId) => `/api/admin/find-listeners/${sessionId}`, 
+    ASSIGN_SESSION: (sessionId) => `/api/admin/sessions/${sessionId}/assign`,
+    PROFILE: "/api/admin/profile",     
+    HISTORY: "/api/admin/history",
+  },
+
+  LISTENER: {
+    APPLY: "/api/listener/apply", 
+    DASHBOARD: "/api/listener/dashboard",
+    TOGGLE_AVAILABILITY: "/api/listener/availability", 
+    SESSION: "/api/listener/sessions",
+    UPDATE_PROFILE: "/api/listener/update-profile",
+    UPLOAD_URL: "/api/listener/presigned-url"
+  },
+
+  
+  MANAGER: {
+    GET_PENDING_APPS: "/api/applications/pending",
+    REVIEW_APP: (appId) => `/api/applications/application/${appId}/review`, 
+    GET_METRICS: "/api/manager/metrics",
+    
+    // Financials
+    GET_FINANCIALS: "/api/manager/financials",
+    PROCESS_PAYOUT: "/api/manager/payout", 
+    
+    // Directory Management
+    GET_LISTENERS: "/api/manager/directory/listeners",
+    BAN_LISTENER: (listenerId) => `/api/manager/directory/listeners/${listenerId}/ban`,
+    ADD_STAFF: "/api/manager/add-staff",
+    
+    
+    GET_SESSION_LOGS: "/api/manager/sessions",
+    GET_ESCALATED: "/api/manager/escalated",
+    GET_DISPUTES: "/api/manager/disputes",
+    RESOLVE_DISPUTE: (sessionId) => `/api/manager/disputes/${sessionId}/resolve`,
+  },
+
+
+  SESSION: {
+    APPLY: "/api/session/apply", 
+    CAN_JOIN: (sessionId) => `/api/session/canJoin/${sessionId}`, // Lobby check
+    HISTORY: "/api/session/history", // Past sessions
+    GET_MESSAGES: (sessionId) => `/api/session/${sessionId}/messages`,
+    COMPLETE : "/api/session/complete",
+    CANCEL_USER: (sessionId) => `/api/session/${sessionId}/cancel`,
+    REPORT_ISSUE: (sessionId) => `/api/session/${sessionId}/report-issue`
+  },
+
+  
+  USER: {
+    DASHBOARD: "/api/user/dashboard",
+    SUBMIT_FEEDBACK: (sessionId) => `/api/user/${sessionId}/review`
+  },
+
+  
+  WALLET: {
+    CREDIT: "/api/wallet/credit",
+    HISTORY: "/api/wallet/history",
+    // BALANCE: "/api/wallet/balance",
+    CREATE_ORDER: "/api/wallet/create-order",
+    VERIFY: "/api/wallet/verify-payment"
+  },
+};
+
+export default API_PATHS;
