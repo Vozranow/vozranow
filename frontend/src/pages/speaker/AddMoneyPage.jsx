@@ -160,7 +160,7 @@ const AddMoneyPage = () => {
                   <div>
                     <h4 className="font-bold text-[#2D2A26] text-sm">Instant Bookings</h4>
                     <p className="text-sm text-[#8C877D] mt-1 leading-relaxed">
-                      Skip the payment gateway delays. Book your therapy sessions instantly with one click.
+                      Skip the payment gateway delays. Book your healing sessions instantly with one click.
                     </p>
                   </div>
                 </div>

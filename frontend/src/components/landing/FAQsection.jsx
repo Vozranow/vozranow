@@ -6,7 +6,7 @@ import { Plus, Minus } from 'lucide-react';
 const faqs = [
   {
     question: "How much does Vozranow cost?",
-    answer: "Vozranow offers flexible plans starting at just $29/week. You can also pay per session if you prefer not to subscribe. We believe support should be accessible to everyone."
+    answer: "Vozranow offers flexible plans starting at just ₹100 where you pay per session. We believe support should be accessible to everyone."
   },
   {
     question: "Is this a replacement for therapy?",
@@ -14,15 +14,15 @@ const faqs = [
   },
   {
     question: "How are listeners vetted?",
-    answer: "Every listener on Vozranow undergoes a rigorous background check and completes our 40-hour 'Empathetic Listening' certification program before they can take their first call."
+    answer: "Our listeners are carefully selected for their empathy and communication skills. While they are not trained therapists, they are deeply trusted, highly compassionate individuals who excel at providing a safe, judgment-free space to listen to you."
   },
   {
     question: "Is it completely anonymous?",
-    answer: "Yes. You can use a nickname/alias, and video is optional. Your conversations are encrypted and never recorded without your explicit written consent."
+    answer: "Yes, you can use a nickname/alias, and video is optional. Please note that sessions are recorded strictly for quality assurance and to help resolve any issues quickly, ensuring the best possible user experience."
   },
   {
     question: "How do I get matched with a listener?",
-    answer: "It takes about 60 seconds. You'll answer a few simple questions about what's on your mind (e.g., relationship issues, work stress), and we'll show you listeners who specialize in those areas."
+    answer: "You simply book a session for a convenient 2-3 hour time slot. Once your request is received, our admins will quickly hand-pick and assign an available listener who is best suited to support you."
   }
 ];
 
