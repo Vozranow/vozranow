@@ -35,7 +35,7 @@ export default function Navbar() {
         {/* Logo */}
         <div>
           <a href="/" className="font-serif text-3xl text-[#0F2F2B]">
-            Vozranow<span className="text-[#4A6B67]">.</span>
+            Vozranow<span className="text-[#4A6B67]"></span>
           </a>
         </div>
 
@@ -162,9 +162,9 @@ function useScroll(threshold) {
 
 const supportLinks = [
   { title: '1-on-1 Sessions', href: '/booking', description: 'Private video calls with listeners.' },
-  { title: 'Emotional Support', href: '/topics/emotional', description: 'Anxiety, stress, and daily struggles.' },
+  // { title: 'Emotional Support', href: '/topics/emotional', description: 'Anxiety, stress, and daily struggles.' },
   { title: 'Personal Growth', href: '/topics/growth', description: 'Coaching for life and career.' },
-  { title: 'Crisis Resources', href: '/crisis', description: 'Immediate help when you need it.' },
+  // { title: 'Crisis Resources', href: '/crisis', description: 'Immediate help when you need it.' },
 ];
 
 const communityLinks = [

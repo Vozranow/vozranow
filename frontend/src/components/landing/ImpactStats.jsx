@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 const STATS = [
   {
     id: 'sessions',
-    label: 'Therapy sessions conducted',
+    label: 'Listening sessions conducted',
     baseValue: 24532, 
     suffix: '',
     isLive: true, 

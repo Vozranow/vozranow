@@ -72,9 +72,6 @@ export default function Footer() {
                 <h4 className="font-serif text-xl text-white">Company</h4>
                 <ul className="space-y-3 text-[#BCCECE] text-sm md:text-base">
                   <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Our Story</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
                 </ul>
               </div>
 
@@ -82,9 +79,9 @@ export default function Footer() {
               <div className="space-y-6">
                 <h4 className="font-serif text-xl text-white">Support</h4>
                 <ul className="space-y-3 text-[#BCCECE] text-sm md:text-base">
-                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                  {/* <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
                   <li><a href="#" className="hover:text-white transition-colors">Safety Standards</a></li>
-                  <li><a href="#" className="hover:text-white transition-colors">Listener Guidelines</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Listener Guidelines</a></li> */}
                   <li><a href="#" className="hover:text-white transition-colors font-medium text-red-200 hover:text-red-100">Crisis Resources</a></li>
                 </ul>
               </div>
@@ -106,7 +103,7 @@ export default function Footer() {
               
               {/* Logo */}
               <div className="flex items-center gap-2 font-serif text-2xl tracking-tight text-white">
-                Vozranow.
+                Vozranow
               </div>
 
               {/* Social Icons */}

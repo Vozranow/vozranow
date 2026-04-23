@@ -13,7 +13,7 @@ const ALL_PLANS = [
   { id: "5", duration: 5, price: 0, name: "Free Trial", desc: "First 5 minutes free to try.", isTrial: true },
   { id: "10", duration: 10, price: 100, name: "Quick Check-in", desc: "A brief 10-minute check-in." },
   { id: "15", duration: 15, price: 299, name: "Short Relief", desc: "15 minutes for immediate calm." },
-  { id: "30", duration: 30, price: 499, name: "Standard Healing", desc: "Standard 30-minute therapy duration." },
+  { id: "30", duration: 30, price: 499, name: "Standard Healing", desc: "Standard 30-minute duration." },
 ];
 
 const SessionBookingPage = () => {
