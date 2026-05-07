@@ -1,208 +1,205 @@
 'use client';
 import React, { useState } from 'react';
-// FIXED: Added 'Mic' to the imports
-import { User, Video, MessageCircle, Calendar, Mic } from 'lucide-react';
+import { FormInput, Clipboard, Clock, CalendarCheck, HandCoins } from 'lucide-react';
 
-// --- Data for the 4 Steps ---
 const stepsData = [
   {
     id: 1,
     title: "Create your free account",
-    description: "Get started in minutes. Just provide a few details to create your private, secure profile.",
-    color: "bg-[#E8F4F1]", // Soft mint/teal
-    screenContent: <ScreenStep1 />,
+    description:
+      "Get started in minutes. Provide a few details to set up your private, secure profile.",
+    icon: FormInput,
   },
   {
     id: 2,
-    title: "Browse & connect with listeners",
-    description: "Explore profiles of empathetic listeners. Filter by topic, language, and availability to find your perfect match.",
-    color: "bg-[#F8F4E3]", // Soft cream/yellow
-    screenContent: <ScreenStep2 />,
+    title: "Request a time window",
+    description:
+      "Select a 2–3 hour window where you are free. Our admin team will carefully match you with the perfect listener.",
+    icon: Clipboard,
   },
   {
     id: 3,
     title: "Have your session, your way",
-    description: "Connect via video, audio, or chat in our secure, private virtual space. You control the comfort level.",
-    color: "bg-[#E3EDF8]", // Soft blue
-    screenContent: <ScreenStep3 />,
+    description:
+      "At the confirmed time, connect with your listener via secure video, audio, or text chat.",
+    icon: Clock,
   },
   {
     id: 4,
-    title: "Build your support system",
-    description: "Schedule recurring sessions with your favorite listeners and access resources to support your journey.",
-    color: "bg-[#F4E3E8]", // Soft pink
-    screenContent: <ScreenStep4 />,
+    title: "Seamless & secure payments",
+    description:
+      "Top up your secure Vozranow wallet for instant, fail-proof session bookings.",
+    icon: HandCoins,
   },
 ];
 
 export default function HowitWorks() {
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(2);
 
   return (
-    <section className="w-full bg-[#FDFCF8] py-24 px-6 md:px-12 lg:px-24">
-      <div className="mx-auto max-w-7xl">
-        <h2 className="mb-16 text-center font-serif text-4xl md:text-5xl text-[#2D2A26]">
-          How Vozranow works
-        </h2>
+    <section className="w-full py-24 px-6 md:px-12 bg-gradient-to-br from-[#0B1F1C] via-[#0F2E2A] to-[#0A1D1A] transition-all duration-500">
+      <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+        
+        {/* LEFT: Header & Illustration */}
+        <div className="lg:col-span-5 space-y-12 text-center lg:text-left">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-[#FDFCF8] leading-tight">
+              How Vozranow works
+            </h2>
+            <p className="text-[#A3C6C0] mt-4 text-sm uppercase tracking-widest font-medium">
+              Your journey to a safe space
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-          
-          {/* --- LEFT: The Steps List --- */}
-          <div className="space-y-4">
-            {stepsData.map((step) => (
+          <div className="hidden lg:flex justify-center lg:justify-start w-full opacity-85">
+            <CalmPlantIllustration />
+          </div>
+        </div>
+
+        {/* RIGHT: Grid of Steps */}
+        <div className="lg:col-span-7 grid sm:grid-cols-2 gap-6 lg:gap-8">
+          {stepsData.map((step) => {
+            const isActive = activeStep === step.id;
+
+            return (
               <div
                 key={step.id}
                 onMouseEnter={() => setActiveStep(step.id)}
-                className={`group relative flex cursor-pointer items-start gap-6 rounded-2xl p-8 transition-all duration-300 ${
-                  activeStep === step.id ? `${step.color} shadow-sm` : 'bg-white hover:bg-gray-50 border border-gray-100'
-                }`}
+                onClick={() => setActiveStep(step.id)}
+                className={`relative rounded-2xl p-7 transition-all duration-300 cursor-pointer w-full
+                
+                ${
+                  isActive
+                    ? "bg-white/10 border border-white/20 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
+                    : "bg-white/[0.03] border border-white/10 hover:bg-white/[0.05]"
+                }
+                `}
               >
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl font-serif transition-colors ${
-                  activeStep === step.id ? 'bg-[#2D2A26] text-white' : 'bg-[#F0F4F4] text-[#2D2A26]'
-                }`}>
+
+                {/* NUMBER BADGE */}
+                <div
+                  className={`absolute -top-4 -left-4 w-9 h-9 rounded-full flex items-center justify-center font-serif text-sm font-bold shadow-lg shadow-black/20
+                  ${
+                    isActive
+                      ? "bg-[#E8F4F1] text-[#173F3A]"
+                      : "bg-[#173F3A] text-[#A3C6C0] border border-[#A3C6C0]/30"
+                  }`}
+                >
                   {step.id}
                 </div>
-                <div>
-                  <h3 className="mb-2 text-xl font-medium text-[#2D2A26]">{step.title}</h3>
-                  <p className="text-[16px] text-[#5C5954] leading-relaxed">{step.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
 
-          {/* --- RIGHT: The Dynamic Laptop Display --- */}
-          <div className="relative flex items-center justify-center lg:h-[600px]">
-            {/* Animated Background Blob */}
-            <div 
-              className={`absolute top-1/2 left-1/2 -z-10 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-[30%_70%_70%_30%/30%_30%_70%_70%] transition-colors duration-700 ease-in-out blur-3xl opacity-60 ${stepsData[activeStep - 1].color}`}
-            />
-            
-            {/* Laptop Device Mockup */}
-            <LaptopDevice>
-              <div className="relative h-full w-full overflow-hidden bg-white">
-                {stepsData.map((step) => (
-                  <div
-                    key={step.id}
-                    className={`absolute inset-0 flex h-full w-full items-center justify-center p-8 transition-opacity duration-500 ease-in-out ${
-                      activeStep === step.id ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                {/* ICON */}
+                <div className="mb-4">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                      isActive ? "bg-[#173F3A]/60 border border-[#A3C6C0]/50" : "border border-[#A3C6C0]/20"
                     }`}
                   >
-                    {step.screenContent}
+                    <step.icon
+                      className={`w-6 h-6 transition-colors ${
+                        isActive ? "text-white" : "text-[#A3C6C0]"
+                      }`}
+                      strokeWidth={1.8}
+                    />
                   </div>
-                ))}
-              </div>
-            </LaptopDevice>
-          </div>
+                </div>
 
+                {/* TITLE */}
+                <h3
+                  className={`text-lg font-serif font-semibold mb-2 transition-colors
+                  ${isActive ? "text-[#FDFCF8]" : "text-[#E8F4F1]/90"}`}
+                >
+                  {step.title}
+                </h3>
+
+                {/* DESCRIPTION */}
+                <p
+                  className={`text-sm leading-relaxed transition-colors
+                  ${isActive ? "text-[#E8F4F1]/80" : "text-[#A3C6C0]/70"}`}
+                >
+                  {step.description}
+                </p>
+
+              </div>
+            );
+          })}
         </div>
+
       </div>
     </section>
   );
 }
 
-// --- Laptop Device Component ---
-function LaptopDevice({ children }) {
+// --- Cute Potted Plant Illustration for the Dark Theme ---
+function CalmPlantIllustration() {
   return (
-    <div className="relative mx-auto w-full max-w-[600px]">
-      <div className="relative h-[350px] w-full overflow-hidden rounded-t-2xl border-[12px] border-b-0 border-[#2D2A26] bg-[#2D2A26] shadow-xl">
-        <div className="absolute top-2 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-[#1a1a1a]" />
-        <div className="h-full w-full overflow-hidden rounded-t-lg bg-white">
-          {children}
-        </div>
-      </div>
-      <div className="relative h-4 w-full rounded-b-2xl bg-[#2D2A26]">
-        <div className="absolute top-0 left-1/2 h-1.5 w-16 -translate-x-1/2 rounded-b-lg bg-[#403D39]" />
-      </div>
-    </div>
-  );
-}
-
-// --- Step 1 Screen: Sign Up ---
-function ScreenStep1() {
-  return (
-    <div className="flex h-full w-full flex-col items-center justify-center space-y-6 text-center">
-      <div className="h-16 w-16 rounded-full bg-[#E8F4F1] flex items-center justify-center">
-        <User size={32} className="text-[#5C5954]" />
-      </div>
-      <div>
-        <h4 className="text-xl font-medium text-[#2D2A26]">Welcome to Vozranow</h4>
-        <p className="text-sm text-[#5C5954]">Create your private account.</p>
-      </div>
-      <div className="w-full max-w-xs space-y-3">
-        <div className="h-10 w-full rounded-lg bg-gray-100 animate-pulse"></div>
-        <div className="h-10 w-full rounded-lg bg-gray-100 animate-pulse"></div>
-        <div className="h-10 w-full rounded-lg bg-[#2D2A26] text-white flex items-center justify-center text-sm font-medium">Create Account</div>
-      </div>
-    </div>
-  );
-}
-
-// --- Step 2 Screen: Listener Profile ---
-function ScreenStep2() {
-  return (
-    <div className="flex h-full w-full flex-col items-center justify-center space-y-6">
-       <h4 className="text-lg font-medium text-[#2D2A26]">Meet your listener</h4>
-       <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <img src="https://i.pravatar.cc/150?img=47" alt="Listener" className="h-16 w-16 rounded-full object-cover" />
-            <div>
-              <h5 className="text-lg font-medium text-[#2D2A26]">Sarah M.</h5>
-              <p className="text-sm text-[#5C5954]">Empathetic Listener</p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-[#5C5954] leading-relaxed">"I'm here to provide a calm, non-judgmental space for you to share whatever is on your mind."</p>
-          <div className="mt-6 flex gap-3">
-             <div className="flex-1 h-9 rounded-lg bg-[#F8F4E3] flex items-center justify-center text-[#2D2A26] text-sm font-medium">View Profile</div>
-             <div className="flex-1 h-9 rounded-lg bg-[#2D2A26] text-white flex items-center justify-center text-sm font-medium">Connect</div>
-          </div>
-       </div>
-    </div>
-  );
-}
-
-// --- Step 3 Screen: Video Call ---
-function ScreenStep3() {
-  return (
-    <div className="relative h-full w-full overflow-hidden rounded-lg bg-gray-900">
-      <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1000&auto=format&fit=crop" alt="Listener Video" className="h-full w-full object-cover opacity-90" />
+    <svg viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[280px] h-auto drop-shadow-2xl">
       
-      <div className="absolute bottom-4 right-4 h-24 w-32 overflow-hidden rounded-lg border-2 border-white bg-gray-800 shadow-lg">
-         <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop" alt="Self Video" className="h-full w-full object-cover" />
-      </div>
+      {/* Background glow circle */}
+      <circle cx="150" cy="200" r="100" fill="#A3C6C0" fillOpacity="0.05" blur="40" />
 
-      <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-4 rounded-full bg-[#2D2A26]/80 p-3 backdrop-blur-sm">
-         <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white"><Mic size={20} /></div>
-         <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-[#2D2A26]"><Video size={20} /></div>
-         <div className="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center text-white"></div>
-      </div>
-    </div>
-  );
-}
+      {/* Main stem (curve) */}
+      <path 
+        d="M150 320 C140 250 160 150 150 70" 
+        stroke="#E8F4F1" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="opacity-80"
+      />
+      
+      {/* Left Leaves */}
+      <path 
+        d="M148 270 Q 100 240 90 270 Q 110 300 150 285" 
+        fill="#A3C6C0" stroke="#E8F4F1" strokeWidth="2" strokeLinejoin="round" className="opacity-90"
+      />
+      <path 
+        d="M152 180 Q 70 140 60 180 Q 90 220 151 195" 
+        fill="none" stroke="#E8F4F1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"
+      />
+      <path 
+        d="M151 100 Q 110 70 100 100 Q 120 130 150 115" 
+        fill="#A3C6C0" stroke="#E8F4F1" strokeWidth="2" strokeLinejoin="round" className="opacity-90"
+      />
 
-// --- Step 4 Screen: Dashboard ---
-function ScreenStep4() {
-  return (
-     <div className="flex h-full w-full flex-col items-center justify-center space-y-6 p-6">
-        <h4 className="text-xl font-medium text-[#2D2A26]">Your Dashboard</h4>
-        <div className="w-full space-y-4">
-           <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-[#F4E3E8]/30 p-4">
-              <div className="flex items-center gap-3">
-                 <div className="h-10 w-10 rounded-full bg-white flex items-center justify-center text-[#2D2A26]"><Calendar size={20} /></div>
-                 <div>
-                    <p className="text-sm font-medium text-[#2D2A26]">Next Session</p>
-                    <p className="text-xs text-[#5C5954]">Tomorrow, 4:00 PM with Sarah</p>
-                 </div>
-              </div>
-              <div className="h-8 px-3 rounded-lg bg-white text-[#2D2A26] text-xs font-medium flex items-center justify-center border border-gray-200">Join</div>
-           </div>
-           <div className="flex items-center gap-4 rounded-xl border border-gray-100 p-4 bg-white">
-               <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-[#5C5954]"><MessageCircle size={20} /></div>
-               <div>
-                  <p className="text-sm font-medium text-[#2D2A26]">Recent Messages</p>
-                  <p className="text-xs text-[#5C5954]">You have 2 new messages.</p>
-               </div>
-           </div>
-        </div>
-     </div>
+      {/* Right Leaves (asymmetrical) */}
+      <path 
+        d="M150 230 Q 220 190 230 230 Q 190 260 149 245" 
+        fill="none" stroke="#E8F4F1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"
+      />
+      <path 
+        d="M150 140 Q 210 110 220 140 Q 180 170 150 155" 
+        fill="#A3C6C0" stroke="#E8F4F1" strokeWidth="2" strokeLinejoin="round" className="opacity-90"
+      />
+      <path 
+        d="M150 60 Q 190 30 200 60 Q 170 90 150 75" 
+        fill="none" stroke="#E8F4F1" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"
+      />
+
+      {/* Top Leaf */}
+      <path 
+        d="M150 70 Q 120 20 150 10 Q 180 20 150 70" 
+        fill="#A3C6C0" stroke="#E8F4F1" strokeWidth="2" strokeLinejoin="round" className="opacity-90"
+      />
+
+      {/* The Pot Base */}
+      <path 
+        d="M110 320 L190 320 L175 390 L125 390 Z" 
+        fill="#173F3A" stroke="#A3C6C0" strokeWidth="3" strokeLinejoin="round"
+      />
+      <path 
+        d="M100 320 L200 320 L195 340 L105 340 Z" 
+        fill="#A3C6C0" stroke="#E8F4F1" strokeWidth="2" strokeLinejoin="round"
+      />
+
+      {/* Minimalist cute butterfly resting on the top leaf */}
+      <g className="drop-shadow-md transition-transform duration-1000 hover:-translate-y-2 hover:rotate-6 origin-[150px_10px]">
+        {/* Left Wing */}
+        <path d="M150 5 C 132 -8, 135 19, 150 12 Z" fill="#E8F4F1" opacity="0.9" />
+        {/* Right Wing */}
+        <path d="M150 5 C 168 -8, 165 19, 150 12 Z" fill="#A3C6C0" opacity="0.9" />
+        {/* Body */}
+        <path d="M150 3 L150 13" stroke="#0B1F1C" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Antennae */}
+        <path d="M150 3 Q 146 0 145 -3" stroke="#A3C6C0" strokeWidth="1" fill="none" strokeLinecap="round" />
+        <path d="M150 3 Q 154 0 155 -3" stroke="#A3C6C0" strokeWidth="1" fill="none" strokeLinecap="round" />
+      </g>
+      
+    </svg>
   );
 }

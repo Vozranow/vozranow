@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { ArrowRight, Sparkles, Users, User } from 'lucide-react';
-
+import corporate from "../../assets/corporate.jpg";
 // --- Configuration Data ---
 const services = [
   {
@@ -17,13 +17,13 @@ const services = [
   },
   {
     id: 'couples',
-    title: 'Couples',
-    subtitle: 'For Relationships',
-    description: "Navigate conflict, improve communication, or just reconnect. A neutral ground to help you understand each other better.",
+    title: 'Corporates',
+    subtitle: 'For working professionals',
+    description: "Office life can be hectic sometimes. Navigate conflict, improve communication, or just reconnect.",
     // Soft Serene Blue Theme
     bgColor: '#E3EDF6',
     accentColor: '#2C5282',
-    image: 'https://images.unsplash.com/photo-1623683677730-671c08e54728?q=80&w=1000&auto=format&fit=crop',
+    image: corporate,
     icon: Users
   },
   {
@@ -103,13 +103,7 @@ function ServiceCard({ service, setActiveBg }) {
         {/* Visible Content (Always there) */}
         <div className="relative z-10 transform transition-transform duration-500 ease-out group-hover:-translate-y-4">
           {/* Badge */}
-          <div 
-            className="mb-4 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md"
-            style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: 'white' }}
-          >
-            <Icon size={14} />
-            <span>{service.subtitle}</span>
-          </div>
+         
 
           <h3 className="font-serif text-3xl text-white mb-2">
             {service.title}
@@ -124,12 +118,12 @@ function ServiceCard({ service, setActiveBg }) {
                 </p>
                 
                 {/* Learn More Link */}
-                <div className="flex items-center gap-2 text-sm font-bold text-white tracking-wide uppercase">
+                {/* <div className="flex items-center gap-2 text-sm font-bold text-white tracking-wide uppercase">
                   <span>Learn more</span>
                   <div className="rounded-full bg-white/20 p-1 transition-transform duration-300 group-hover:translate-x-2">
                     <ArrowRight size={14} />
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

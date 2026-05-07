@@ -1,97 +1,174 @@
 'use client';
-import React from 'react';
-import { Heart, Mic, Shield, Users, PauseCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Heart, ShieldCheck, Ear, SunMoon, UserCheck, ArrowRight } from 'lucide-react';
+
+const FEATURES = [
+  { 
+    id: 0, 
+    icon: Heart, 
+    title: "Real Connection", 
+    text: "Experience genuine, real human connection without automated responses." 
+  },
+  { 
+    id: 1, 
+    icon: ShieldCheck, 
+    title: "A Safe Space", 
+    text: "Enter a completely safe, judgment-free zone where your thoughts are protected." 
+  },
+  { 
+    id: 2, 
+    icon: Ear, 
+    title: "True Listening", 
+    text: "Find someone who truly listens to you, without interruption or expectation." 
+  },
+  { 
+    id: 3, 
+    icon: SunMoon, 
+    title: "Constant Support", 
+    text: "Unwavering support through both your happiest moments and your most difficult times." 
+  },
+  { 
+    id: 4, 
+    icon: UserCheck, 
+    title: "Be Yourself", 
+    text: "A dedicated place where you don't have to pretend. Just come exactly as you are." 
+  }
+];
 
 export default function Whatwedo() {
+  const [isHovered, setIsHovered] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(0);
+
   return (
-    <section className="relative w-full bg-[#FDFCF8] py-24 px-6 md:px-12 overflow-hidden">
-      
-      {/* --- Background Textures (Subtle Waves) --- */}
-      {/* Top Right Wave */}
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] opacity-40 pointer-events-none translate-x-1/3 -translate-y-1/3">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#E8E6E1" d="M44.7,-76.4C58.9,-69.2,71.8,-59.1,81.6,-46.6C91.4,-34.1,98.1,-19.2,95.8,-4.9C93.5,9.3,82.1,22.9,70.6,33.5C59.1,44.1,47.5,51.7,35.4,59.3C23.3,66.9,10.7,74.5,-0.6,75.5C-11.9,76.6,-25.1,71.1,-37.2,63.4C-49.3,55.7,-60.3,45.8,-68.6,33.7C-76.9,21.6,-82.5,7.3,-80.4,-5.9C-78.3,-19.1,-68.5,-31.2,-57.4,-40.3C-46.3,-49.4,-33.9,-55.5,-21.2,-63.9C-8.5,-72.3,4.5,-83,17.4,-82.7C30.3,-82.4,43.1,-71.1,44.7,-76.4Z" transform="translate(100 100)" />
-        </svg>
-      </div>
-      
-      {/* Bottom Left Wave */}
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] opacity-40 pointer-events-none -translate-x-1/3 translate-y-1/3">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#E8E6E1" d="M41.4,-70.5C53.3,-64.8,62.6,-53.4,70.8,-41.4C79,-29.4,86.1,-16.8,85.1,-4.7C84.1,7.4,75,19.1,65.8,29.7C56.6,40.3,47.3,49.8,36.7,56.8C26.1,63.8,14.1,68.3,1.3,66.1C-11.5,63.9,-25.1,55,-37.4,46.2C-49.7,37.4,-60.7,28.7,-67.8,17.4C-74.9,6.1,-78.1,-7.8,-73.3,-20.1C-68.5,-32.4,-55.7,-43.1,-43.3,-48.6C-30.9,-54.1,-18.9,-54.4,-7.6,-41.3C3.7,-28.1,29.5,-76.2,41.4,-70.5Z" transform="translate(100 100)" />
-        </svg>
+    <section className="w-full bg-[#FDFCF8] py-20 px-6 md:px-12 font-sans selection:bg-[#173F3A] selection:text-white">
+
+      {/* ================= HERO IMAGE ================= */}
+      <div className="relative max-w-6xl mx-auto rounded-[2rem] overflow-hidden h-[350px] md:h-[450px] shadow-sm border border-[#E8E6E1]">
+        
+        {/* Background Image */}
+        <img
+          src="/what-we-do.jpg"
+          alt="Peaceful space"
+          className={`absolute inset-0 w-full h-full object-cover object-[center_60%] transition-all duration-700 ease-in-out ${
+            isHovered ? 'blur-xl scale-105' : 'blur-0 scale-100'
+          }`}
+        />
+
+        {/* Gradient Overlay for Text Readability */}
+        <div className={`absolute inset-0 transition-all duration-700 bg-gradient-to-t from-[#173F3A]/90 via-[#173F3A]/30 to-transparent ${
+            isHovered ? 'bg-[#173F3A]/40' : ''
+        }`} />
+
+        {/* 🟢 REFINED TEXT: Elegant, readable, not overwhelming */}
+        <div className="absolute inset-0 flex flex-col items-center justify-end text-center px-6 pb-12 md:pb-16">
+          <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-serif font-medium leading-tight tracking-wide drop-shadow-md transition-transform duration-500">
+            Connect with a listener.
+          </h1>
+          <p className="text-[#E5F0EE] mt-3 text-sm md:text-base font-medium tracking-widest uppercase drop-shadow-sm">
+            A space where you are heard
+          </p>
+
+          <Link 
+            to="/register"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="group mt-8 bg-white text-[#173F3A] px-8 py-4 rounded-full font-bold text-sm tracking-wide shadow-lg hover:shadow-2xl hover:bg-[#F0F7F5] transform transition-all duration-300 hover:-translate-y-1 flex items-center gap-2"
+          >
+            Get Started 
+            <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl">
-        {/* CHANGED: Added responsiveness (md:grid-cols-2) to ensure side-by-side on tablets/desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 lg:gap-24 items-center">
+      {/* ================= EDITORIAL PROSE SECTION ================= */}
+      <div className="max-w-5xl mx-auto mt-24 md:mt-32">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-20">
           
-          {/* --- LEFT: The "IRL" Image --- */}
-          <div className="relative group mx-auto w-full max-w-md md:max-w-none">
-            <div className="absolute inset-0 bg-[#E8E6E1] rounded-2xl transform rotate-3 transition-transform duration-500 group-hover:rotate-2" />
-            <div className="relative h-[400px] md:h-[500px] w-full overflow-hidden rounded-xl bg-gray-100 shadow-xl shadow-[#2D2A26]/5">
-              <img 
-                src="women.png" 
-                alt="Woman holding tea" 
-                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-[#2D2A26]/5 mix-blend-overlay" />
-            </div>
+          {/* Sticky Left Title */}
+          <div className="md:col-span-5 lg:col-span-4 md:sticky md:top-24 h-fit">
+            <div className="w-12 h-1 bg-[#A3C6C0] rounded-full mb-6"></div>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-[#173F3A] leading-tight">
+              What finding your <br className="hidden md:block" />
+              <span className="italic text-[#8C877D] font-light">space</span> looks like.
+            </h2>
           </div>
 
-          {/* --- RIGHT: The Engaging Points --- */}
-          <div className="space-y-8">
-            <div className="space-y-3">
-              <h2 className="font-serif text-3xl md:text-5xl text-[#2D2A26] leading-tight">
-                What finding your <br />
-                <span className="italic text-[#8C877D]">space</span> looks like.
-              </h2>
-              <p className="text-lg text-[#5C5954] max-w-md leading-relaxed font-medium opacity-90">
-                Vozranow isn't about clinical fixes or rigid schedules. It's about having a dedicated time where you don't have to pretend.
-              </p>
-            </div>
-
-            {/* CHANGED: Compact spacing (space-y-4 instead of 6) */}
-            <ul className="space-y-4">
-              <BenefitPoint 
-                icon={Heart} 
-                text="Real human connection, absolutely no bots or scripts." 
-              />
-              <BenefitPoint 
-                icon={Mic} 
-                text="Flexible sessions on your terms—video, audio, or chat." 
-              />
-              <BenefitPoint 
-                icon={Shield} 
-                text="A completely private, judgment-free zone." 
-              />
-              <BenefitPoint 
-                icon={Users} 
-                text="Switch listeners easily to find your right match." 
-              />
-              <BenefitPoint 
-                icon={PauseCircle} 
-                text="Support that respects your pace and needs, not a 'fix'." 
-              />
-            </ul>
+          {/* Right Flowing Text */}
+          <div className="md:col-span-7 lg:col-span-8 space-y-8 text-[15px] md:text-[17px] text-[#5C5954] leading-relaxed font-medium">
+            <p>
+              In this world, it often feels like no one truly belongs to anyone. People don’t always understand each other, and sometimes it seems like no one really listens.
+            </p>
+            <p>
+              All we really want is someone we can talk to—someone who will listen without judging, who will share in our happiness, and who will hear our pain with empathy.
+            </p>
+            <p>
+              In moments of joy and in times of sorrow, we just need someone who will listen—without interruption, without expectations, and without judgment. Someone who is simply there to listen, and keeps listening.
+            </p>
+            <p className="text-[#2D2A26] font-bold text-lg md:text-xl font-serif mt-10 border-l-2 border-[#173F3A] pl-6 py-1">
+              At the end of the day, what truly matters is having someone who listens and understands.
+            </p>
           </div>
 
         </div>
       </div>
-    </section>
-  );
-}
 
-// --- Subcomponent for the List Items ---
-function BenefitPoint({ icon: Icon, text }) {
-  return (
-    <li className="flex items-start gap-3 group cursor-default">
-      <div className="mt-0.5 flex-shrink-0 text-[#8C877D] transition-colors duration-300 group-hover:text-[#2D2A26]">
-        <Icon size={20} strokeWidth={2} /> {/* Slightly bolder icon stroke */}
+      {/* ================= INTERACTIVE ICON TIMELINE ================= */}
+      <div className="max-w-4xl mx-auto mt-32 md:mt-40 text-center">
+        
+        <h2 className="text-2xl md:text-3xl font-serif font-bold text-[#2D2A26] mb-2">
+          What you get here
+        </h2>
+        <p className="text-[#8C877D] text-sm uppercase tracking-widest font-medium mb-16">
+          The Vozranow Promise
+        </p>
+
+        {/* The Horizontal Interactive Bar */}
+        <div className="relative max-w-3xl mx-auto">
+          
+          {/* The Connecting Line (Background) */}
+          <div className="absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-[#E8E6E1] -translate-y-1/2 z-0 hidden sm:block"></div>
+
+          {/* The Icons */}
+          <div className="flex justify-between items-center relative z-10 gap-2 sm:gap-0 overflow-x-auto sm:overflow-visible px-2 pb-4 sm:pb-0 hide-scrollbar">
+            {FEATURES.map((feature) => {
+              const Icon = feature.icon;
+              const isActive = activeFeature === feature.id;
+
+              return (
+                <button
+                  key={feature.id}
+                  onMouseEnter={() => setActiveFeature(feature.id)}
+                  onClick={() => setActiveFeature(feature.id)} 
+                  className={`relative w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                    isActive 
+                      ? 'bg-[#173F3A] text-white scale-110 shadow-lg shadow-[#173F3A]/20 border-2 border-white ring-4 ring-[#E8F4F1]' 
+                      : 'bg-white text-[#8C877D] border-2 border-[#E8E6E1] hover:border-[#A3C6C0] hover:text-[#173F3A]'
+                  }`}
+                >
+                  <Icon size={24} strokeWidth={isActive ? 2 : 1.5} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Dynamic Text Display (Changes based on hover) */}
+        <div className="mt-12 h-24 flex flex-col items-center justify-start px-4">
+           <div 
+             key={activeFeature} 
+             className="animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-lg mx-auto"
+           >
+             <h3 className="font-bold text-[#173F3A] text-xl mb-2">
+               {FEATURES[activeFeature].title}
+             </h3>
+             <p className="text-[#5C5954] leading-relaxed text-[15px]">
+               {FEATURES[activeFeature].text}
+             </p>
+           </div>
+        </div>
+
       </div>
-      {/* CHANGED: Bolder font (font-medium), slightly smaller text, tighter leading */}
-      <span className="text-[16px] font-medium text-[#4A4742] leading-snug transition-colors duration-300 group-hover:text-black">
-        {text}
-      </span>
-    </li>
+    </section>
   );
 }

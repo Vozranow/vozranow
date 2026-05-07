@@ -18,18 +18,18 @@ const LandingPage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinWaitComplete(true);
-    }, 2500); // 2.5 seconds (adjustable)
+    }, 1500); // 2.5 seconds 
     return () => clearTimeout(timer);
   }, []);
 
-  // 🟢 3. Update the redirect logic to wait for BOTH the backend and the timer
+  
   useEffect(() => {
     if (!loading && isAuthenticated && minWaitComplete) {
       navigate('/profile', { replace: true });
     }
   }, [isAuthenticated, loading, minWaitComplete, navigate]);
 
-  // 🟢 4. Show the loader if the backend is loading OR the timer isn't done yet
+  
   if (loading || !minWaitComplete) {
     return (
       <div className="h-screen w-full bg-[#FDFCF8] flex flex-col items-center justify-center relative overflow-hidden">
