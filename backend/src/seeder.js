@@ -36,7 +36,7 @@ const seed = async () => {
     for (const user of staff) {
       await User.create(user);
     }
-    console.log("✅ Admin & Manager Created");
+    console.log("Admin & Manager Created");
 
     // 4. Create Dummy Clients (Seekers) 👥
     const seekerNames = ["BlueSky99", "SilentRiver", "HopefulOwl", "VelvetThunder", "NeonWalker"];

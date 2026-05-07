@@ -117,13 +117,13 @@ const SessionBookingPage = () => {
   const visiblePlans = ALL_PLANS.filter(plan => !(plan.isTrial && hasUsedFreeTrial));
 
   return (
-    // 🟢 NEW: Using a slightly richer background so the white cards pop.
+    // Using a slightly richer background so the white cards pop.
     <div className="min-h-screen bg-[#F4F7F6] pb-12 font-sans selection:bg-[#173F3A] selection:text-white">
       
       {/* 1. Hero Header */}
       <div className="bg-[#173F3A] text-white pt-20 pb-32 px-6 relative overflow-hidden">
         
-        {/* 🟢 NEW: Proper Button styling, absolutely positioned to top left */}
+        {/* Proper Button styling, absolutely positioned to top left */}
         <button 
           onClick={() => navigate("/dashboard")}
           className="absolute top-6 left-6 md:left-10 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 rounded-full text-white text-sm font-medium transition-all shadow-sm z-30"
@@ -145,7 +145,7 @@ const SessionBookingPage = () => {
         </div>
       </div>
 
-      {/* 🟢 NEW: Two-Column Layout */}
+      {/*Two-Column Layout */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           

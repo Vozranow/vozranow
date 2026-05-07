@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { ArrowRight, Sparkles, Users, User } from 'lucide-react';
-
+import corporate from "../../assets/corporate.jpg";
 // --- Configuration Data ---
 const services = [
   {
@@ -23,7 +23,7 @@ const services = [
     // Soft Serene Blue Theme
     bgColor: '#E3EDF6',
     accentColor: '#2C5282',
-    image: 'corporate.jpg',
+    image: corporate,
     icon: Users
   },
   {
