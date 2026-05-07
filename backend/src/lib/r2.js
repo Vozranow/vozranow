@@ -1,5 +1,5 @@
 import { S3Client } from "@aws-sdk/client-s3";
-import { ENV } from "./env.js"; // Assuming you have an env loader
+import { ENV } from "./env.js"; 
 
 export const r2Client = new S3Client({
   region: "auto", // Cloudflare uses 'auto'

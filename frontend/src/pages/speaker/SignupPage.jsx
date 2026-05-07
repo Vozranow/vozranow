@@ -5,7 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import axiosInstance from "../../utils/axiosInstance.js";
 import API_PATHS from "../../utils/apiPaths.js";
 import { useAuth } from "../../context/useAuth.js";
-
+import loginpg from "../../assets/login-background.jpg";
 const SignupPage = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
@@ -100,7 +100,7 @@ const SignupPage = () => {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
 
       {/* ✅ Background Image */}
-      <div className="absolute inset-0 bg-[url('/login-background.jpg')] bg-cover bg-center" />
+      <div className="absolute inset-0  bg-cover bg-center" style={{ backgroundImage: `url(${loginpg})` }} />
 
       {/* Optional dark overlay for readability */}
       <div className="absolute inset-0 bg-black/40" />

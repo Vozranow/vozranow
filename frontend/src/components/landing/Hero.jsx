@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import heropg from "../../assets/hero-section.jpg";
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -14,7 +14,7 @@ export default function Hero() {
     <section className="relative min-h-screen w-full overflow-hidden px-6 pt-20 md:pt-22 pb-20">
 
     
-      <div className="absolute inset-0 bg-[url('/hero-section.jpg')] bg-cover bg-center" />
+      <div className="absolute inset-0  bg-cover bg-center" style={{ backgroundImage: `url(${heropg})` }} />
 
       {/* Optional overlay for readability */}
       <div className="absolute inset-0 bg-black/40" />
