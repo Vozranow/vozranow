@@ -1,0 +1,89 @@
+version: "3.9"
+
+services:
+
+  # =========================
+  # REDIS
+  # =========================
+  redis:
+    image: redis:7-alpine
+    container_name: vozranow-redis
+
+    command: redis-server --loglevel warning
+
+    restart: unless-stopped
+
+    volumes:
+      - redis-data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+    networks:
+      - vozranow
+
+
+  # =========================
+  # API SERVER
+  # =========================
+  backend:
+    image: vozranow-backend
+
+    build:
+      context: ./backend
+       # means build the image from backend dockerfile and name it vozranow-backend 
+    container_name: vozranow-api
+
+    env_file:
+      - ./backend/src/.env
+
+    ports:
+      - "3001:3001"
+
+    depends_on:
+      redis:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+    networks:
+      - vozranow
+
+
+  # =========================
+  # FRONTEND
+  # =========================
+  frontend:
+    image: vozranow-frontend
+
+    build:
+      context: ./frontend
+
+    container_name: vozranow-frontend
+
+    ports:
+      - "80:80"
+
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - vozranow
+
+
+# =========================
+# VOLUMES
+# =========================
+volumes:
+  redis-data:
+
+
+# =========================
+# NETWORKS
+# =========================
+networks:
+  vozranow:
+    driver: bridge

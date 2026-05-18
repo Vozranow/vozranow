@@ -1,0 +1,8 @@
+node_modules
+# should be installed in the container, not copied from local
+
+dist
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
