@@ -1,0 +1,51 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.986.0",
+    "@aws-sdk/s3-request-presigner": "^3.986.0",
+    "@react-email/components": "^1.0.6",
+    "agora-token": "^2.0.5",
+    "axios": "^1.13.4",
+    "bcryptjs": "^3.0.3",
+    "bullmq": "^5.71.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "ioredis": "^5.9.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.19.1",
+    "node-cron": "^4.2.1",
+    "razorpay": "^2.9.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "recharts": "^3.8.0",
+    "resend": "^6.8.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@react-email/preview-server": "^5.2.5",
+    "cross-env": "^10.1.0",
+    "eslint": "^10.0.1",
+    "globals": "^17.3.0",
+    "jest": "^30.2.0",
+    "nodemon": "^2.0.22",
+    "react-email": "^5.2.5"
+  },
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --watchAll",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}
